@@ -1,0 +1,31 @@
+[package]
+name = "game_features"
+version = "0.1.0"
+authors = ["jojolepro <jojolepromain@gmail.com>"]
+description = "Various helpful constructs for game developement."
+categories = ["game-engines"]
+keywords = ["game", "features", "utils"]
+documentation = "https://docs.rs/game_features"
+repository = "https://github.com/jojolepro/game_features"
+license = "Apache-2.0"
+edition = "2018"
+exclude = ["doc"]
+
+[dependencies]
+partial_function = "0.4.0"
+serde = { version = "1.0", features = ["serde_derive"] }
+serde_derive = "1.0"
+serde_json = "1.0"
+ron = "0.2"
+dirty = "0.2"
+rand = "0.5.5"
+lazy_static = "1.1.0"
+derive-new = "0.5"
+roman = "0.1.6"
+
+#hyper = "0.12.11"
+#hyper-tls = "0.3.1"
+
+#tokio = "0.1.7"
+#tokio-executor = "0.1.0"
+
