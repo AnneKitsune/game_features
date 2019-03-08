@@ -1,36 +1,37 @@
+use std::marker::PhantomData;
 use std::collections::HashMap;
 
 // TODO: extensibility. ie weight
 
-pub struct ItemDefinition<K, D, T> {
+pub struct ItemDefinition<K, T, D> {
     pub key: K,
     pub item_type: T,
     pub name: String,
     pub description: String,
-    pub maximum_stack: u32,
-    pub maximum_durability: Option<u32>,
+    pub maximum_stack: usize,
+    pub maximum_durability: Option<usize>,
     pub user_data: D,
 }
 
-pub struct ItemInstance<K> {
+pub struct ItemInstance<K: PartialEq> {
     pub item_key: K,
-    pub count: u32,
-    pub durability: Option<u32>,
+    pub count: usize,
+    pub durability: Option<usize>,
 }
 
-pub type ItemDefinitionRepository<K> = HashMap<K, ItemDefinition<K>>;
+pub type ItemDefinitionRepository<K, T, D> = HashMap<K, ItemDefinition<K, T, D>>;
 
-pub trait SlotType<T> {
-    fn can_insert_into(&self, item: &ItemDefinition) -> bool;
+pub trait SlotType<K, T, D> {
+    fn can_insert_into(&self, item: &ItemDefinition<K, T, D>) -> bool;
 }
 
 /// The way the inventory size is handled.
 pub enum InventorySizingMode {
     /// The inventory uses a fixed size.
-    Fixed(size: u32),
+    Fixed{size: usize},
     /// The inventory grows and shrinks depending on the content.
     /// Slot restrictions are ignored in this mode.
-    Dynamic(min_size: u32, max_size: u32),
+    Dynamic{min_size: usize, max_size: usize},
 }
 
 pub enum MoveToFrontMode {
@@ -44,8 +45,8 @@ pub enum MoveToFrontMode {
 
 // even more complex restrictions, like limit max weight -> wrap inventory in other struct and make
 // the checks there.
-pub struct Inventory<K, S: SlotType<T>, T, D> {
-    pub content: Vec<Option<ItemInstance<K, D, T>>>, 
+pub struct Inventory<K, T, D, S: SlotType<K, T, D>> {
+    pub content: Vec<Option<ItemInstance<K>>>, 
     /// Restricts what kind of item can go in different slots.
     /// This is not compatible with `InventorySizingMode::Dynamic`.
     pub slot_restriction: Vec<Option<S>>,
@@ -55,133 +56,152 @@ pub struct Inventory<K, S: SlotType<T>, T, D> {
     pub sizing_mode: InventorySizingMode,
 }
 
-impl<K> Inventory<K> {
+impl<K: PartialEq, T, D, S: SlotType<K, T, D>> Inventory<K, T, D, S> {
 
     /// Will attempt to decrease the durability of the item at the specified index.
     /// If the item has no durability value (None) or a non zero durability, it will return this
     /// value.
     /// If the item has a durability of 0 when using it, it will break and
     /// `ItemError::ItemDestroyed` will be returned.
-    pub fn use(&mut self, idx: u32) -> Result<Option<u32>, ItemError> {
-        if let Some(ii) = self.content.get_mut(idx) {
+    pub fn use_item(&mut self, idx: usize) -> Result<Option<usize>, ItemError<K>> {
+        if let Some(Some(ii)) = self.content.get_mut(idx) {
             if ii.durability.is_some() {
                 if ii.durability.unwrap() == 0 {
                     //rm item
-                    Err(ItemError::ItemDestroyed(self.delete_stack(idx).unwrap())
+                    Err(ItemError::ItemDestroyed(self.delete_stack(idx)?))
                 } else {
-                    ii.durability -= 1;
-                    Ok(Some(ii.durability))
+                    *ii.durability.as_mut().unwrap() -= 1;
+                    Ok(Some(ii.durability.unwrap()))
                 }
             } else {
-                None
+                Ok(None)
             }
+        } else {
+            Err(ItemError::SlotEmpty)
         }
-        Ok(())
     }
 
     /// Decreases the stack size by one and returns the current value.
-    /// Once the stack size hits zero, it will return `ItemError::StackEmpty`.
-    pub fn consume(&mut self, idx: u32) -> Result<u32, ItemError> {
-        if let Some(ii) = self.content.get_mut(idx) {
+    /// Once the stack size hits zero, it will return `ItemError::StackConsumed`.
+    pub fn consume(&mut self, idx: usize) -> Result<usize, ItemError<K>> {
+        if let Some(Some(ii)) = self.content.get_mut(idx) {
             ii.count -= 1;
             if ii.count == 0 {
-                Err(ItemError::StackEmpty(self.delete_stack(idx).unwrap))
+                Err(ItemError::StackConsumed(self.delete_stack(idx)?))
             } else {
-                ii.count
+                Ok(ii.count)
             }
+        } else {
+            Err(ItemError::SlotEmpty)
         }
-        Ok(())
     }
 
     /// Looks if there is enough space to add another item stack.
     pub fn has_space(&self) -> bool {
         match self.sizing_mode {
-            SizingMode::Fixed(size) => {
-                self.content.iter().contains(None)
+            InventorySizingMode::Fixed{size} => {
+                self.content.iter().any(|o| o.is_none())
             },
-            SizingMode::Dynamic(_, max) => self.content.len() != max,
+            InventorySizingMode::Dynamic{min_size, max_size} => self.content.len() != max_size,
         }
     }
 
-    pub fn transfer(&mut self, from_idx: u32, target: &mut Inventory, to_idx: u32, quantity: u32) -> Result<(), ItemError> {
+    pub fn transfer(&mut self, from_idx: usize, target: &mut Inventory<K, T, D, S>, to_idx: usize, quantity: usize) -> Result<(), ItemError<K>> {
 
     }
 
-    pub fn transfer_stack(&mut self, from_idx: u32, target: &mut Inventory, to_idx: u32) -> Result<(), ItemError> {
+    pub fn transfer_stack(&mut self, from_idx: usize, target: &mut Inventory<K, T, D, S>, to_idx: usize) -> Result<(), ItemError<K>> {
 
     }
 
-    pub fn move(&mut self, from_idx: u32, to_idx: u32, quantity: u32, with_overflow: bool) -> Result<(), ItemError> {
+    pub fn move_item(&mut self, from_idx: usize, to_idx: usize, quantity: usize, with_overflow: bool) -> Result<(), ItemError<K>> {
 
     }
 
-    pub fn move_stack(&mut self, from_idx: u32, to_idx: u32, with_overflow: bool) -> Result<(), ItemError> {
+    pub fn move_stack(&mut self, from_idx: usize, to_idx: usize, with_overflow: bool) -> Result<(), ItemError<K>> {
 
     }
 
-    pub fn delete(&mut self, idx: u32, quantity: u32) -> Result<ItemInstance<K>, ItemError> {
+    pub fn delete(&mut self, idx: usize, quantity: usize) -> Result<ItemInstance<K>, ItemError<K>> {
 
     }
 
-    pub fn delete_stack(&mut self, idx: u32) -> Result<ItemInstance<K>, ItemError> {
+    pub fn delete_stack(&mut self, idx: usize) -> Result<ItemInstance<K>, ItemError<K>> {
 
     }
 
-    pub fn delete_key(&mut self, key: K, quantity: u32) -> Result<ItemInstance<K>, ItemError> {
+    pub fn delete_key(&mut self, key: K, quantity: usize) -> Result<ItemInstance<K>, ItemError<K>> {
 
     }
 
-    pub fn has_quantity(&self, key: K, quantity: u32) -> bool {
+    pub fn has_quantity(&self, key: K, quantity: usize) -> bool {
 
     }
 
     /// Checks if the inventory contains at least one `ItemInstance` of the specified key.
     pub fn has(&self, key: K) -> bool {
-        self.content.iter().any(|ii| ii.key == key)
+        self.content.iter().any(|ii| ii.is_some() && ii.unwrap().item_key == key)
     }
 
     /// Gets an immutable reference to the `ItemInstance` at the specified index.
-    pub fn get(&self, idx: u32) -> Option<&ItemInstance<K>> {
-        self.content.get(idx)
+    pub fn get(&self, idx: usize) -> &Option<ItemInstance<K>> {
+        self.content.get(idx).unwrap_or(&None)
     }
 
     /// Gets a mutable reference to the `ItemInstance` at the specified index.
-    pub fn get_mut(&self, idx: u32) -> Option(&mut ItemInstance<K>) {
-        self.content.get_mut(idx)
+    pub fn get_mut(&self, idx: usize) -> &mut Option<ItemInstance<K>> {
+        self.content.get_mut(idx).unwrap_or(&mut None)
     }
 
     /// Finds the item instances using the specified key. Returns an iterator of immutable
     /// references.
-    pub fn get_key(&self, key: K) -> Iterator<Item = <&mut ItemInstance<K>>> {
-        self.content.iter().filter(|ii| ii.key == key)
+    pub fn get_key(&self, key: K) -> impl Iterator<Item = &ItemInstance<K>> {
+        self.content.iter().flatten().filter(|ii| ii.item_key == key)
     }
 
     /// Finds the item instances using the specified key. Returns an iterator of mutable
     /// references.
-    pub fn get_key_mut(&mut self, key: K) -> Iterator<Item = <&mut ItemInstance<K>>> {
-       self.content.iter_mut().filter(|ii| ii.key == key) 
+    pub fn get_key_mut(&mut self, key: K) -> impl Iterator<Item = &mut ItemInstance<K>> {
+       self.content.iter_mut().flatten().filter(|ii| ii.item_key == key)
     }
 
-    pub fn insert_into(&mut self, item: ItemInstance<K>) -> Result<(), ItemError> {
-
-    }
-
-    pub fn insert(&mut self, item: ItemInstance<K>) -> Result<(), ItemError> {
+    pub fn insert_into(&mut self, item: ItemInstance<K>) -> Result<(), ItemError<K>> {
 
     }
 
-    pub fn first_empty_slot(&self) -> Option<u32> {
-        match self.move_to_front_mode {
-            MoveToFrontMode::None => 
+    pub fn insert(&mut self, item: ItemInstance<K>) -> Result<(), ItemError<K>> {
+
+    }
+
+    pub fn first_empty_slot(&self) -> Option<usize> {
+        match self.move_to_front {
+            MoveToFrontMode::None => {
+                let mut ret = self.content.iter().enumerate().find(|t| t.1.is_none()).map(|t| t.0);
+                if let InventorySizingMode::Dynamic{min_size, max_size} = self.sizing_mode {
+                    if ret.is_none() && self.content.len() < max_size {
+                        ret = Some(self.content.len());
+                    }
+                }
+                ret
+            },
             MoveToFrontMode::TakeLast | MoveToFrontMode::Offset => {
-                
+                let max = match self.sizing_mode {
+                    InventorySizingMode::Fixed{size} => size,
+                    InventorySizingMode::Dynamic{min_size, max_size} => max_size,
+                };
+                if self.content.len() != max {
+                    Some(self.content.len())
+                } else {
+                    None
+                }
+            }
         }
     }
 
-    pub fn first_empty_slot_filtered(&self, 
+    //pub fn first_empty_slot_filtered(&self, 
 }
 
-pub enum ItemError {
+pub enum ItemError<K: PartialEq> {
     StackOverflow(ItemInstance<K>),
     InventoryFull(Vec<ItemInstance<K>>),
     InventoryOverflow(Vec<ItemInstance<K>>),
@@ -195,12 +215,13 @@ pub enum ItemError {
     NotEnoughQuantity,
 }
 
-pub struct SingleEquippedItem {
-    pub equipped_index: u32,
+pub struct SingleEquippedItem<K> {
+    pub equipped_index: usize,
+    _phantom: PhantomData<K>,
 }
 
-impl SingleEquippedItem {
-    pub fn get_equipped(&self, &Inventory) -> Option<&ItemInstance<K>> {
+impl<K> SingleEquippedItem<K> {
+    pub fn get_equipped(&self, inventory: &Inventory<K, T, D, S>) -> Option<&ItemInstance<K>> {
 
     }
 }
