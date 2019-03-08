@@ -24,39 +24,82 @@ pub trait SlotType<T> {
     fn can_insert_into(&self, item: &ItemDefinition) -> bool;
 }
 
+/// The way the inventory size is handled.
+pub enum InventorySizingMode {
+    /// The inventory uses a fixed size.
+    Fixed(size: u32),
+    /// The inventory grows and shrinks depending on the content.
+    /// Slot restrictions are ignored in this mode.
+    Dynamic(min_size: u32, max_size: u32),
+}
+
+pub enum MoveToFrontMode {
+    /// Don't move items to the front when there is available space.
+    None,
+    /// Takes the last element and puts it where the removed one was.
+    TakeLast,
+    /// Moves all elements after the removed one.
+    Offset,
+}
 
 // even more complex restrictions, like limit max weight -> wrap inventory in other struct and make
 // the checks there.
 pub struct Inventory<K, S: SlotType<T>, T, D> {
     pub content: Vec<Option<ItemInstance<K, D, T>>>, 
+    /// Restricts what kind of item can go in different slots.
+    /// This is not compatible with `InventorySizingMode::Dynamic`.
     pub slot_restriction: Vec<Option<S>>,
-    /// Forces items to go as far as possible to the front of the list, filing any empty space.
-    pub move_to_front: bool,
-    pub max_size: Option<u32>,
+    /// Configures how item deletion is handled.
+    pub move_to_front: MoveToFrontMode,
+    /// Configures if the inventory resizes when item are inserted/removed or not.
+    pub sizing_mode: InventorySizingMode,
 }
 
 impl<K> Inventory<K> {
-    pub fn use(&mut self, idx: u32) -> Result<(), ItemError> {
+
+    /// Will attempt to decrease the durability of the item at the specified index.
+    /// If the item has no durability value (None) or a non zero durability, it will return this
+    /// value.
+    /// If the item has a durability of 0 when using it, it will break and
+    /// `ItemError::ItemDestroyed` will be returned.
+    pub fn use(&mut self, idx: u32) -> Result<Option<u32>, ItemError> {
         if let Some(ii) = self.content.get_mut(idx) {
             if ii.durability.is_some() {
-                ii.durability -= 1;
-                if ii.durability.unwrap() < 0 {
+                if ii.durability.unwrap() == 0 {
                     //rm item
-                    self.content.
+                    Err(ItemError::ItemDestroyed(self.delete_stack(idx).unwrap())
+                } else {
+                    ii.durability -= 1;
+                    Ok(Some(ii.durability))
                 }
+            } else {
+                None
             }
         }
+        Ok(())
     }
 
-    pub fn consume(&mut self, idx: u32) -> Result<(), ItemError> {
-        // decrease stack size
+    /// Decreases the stack size by one and returns the current value.
+    /// Once the stack size hits zero, it will return `ItemError::StackEmpty`.
+    pub fn consume(&mut self, idx: u32) -> Result<u32, ItemError> {
+        if let Some(ii) = self.content.get_mut(idx) {
+            ii.count -= 1;
+            if ii.count == 0 {
+                Err(ItemError::StackEmpty(self.delete_stack(idx).unwrap))
+            } else {
+                ii.count
+            }
+        }
+        Ok(())
     }
 
+    /// Looks if there is enough space to add another item stack.
     pub fn has_space(&self) -> bool {
-        if let Some(s) = self.max_size {
-            if 
-        } else {
-            true
+        match self.sizing_mode {
+            SizingMode::Fixed(size) => {
+                self.content.iter().contains(None)
+            },
+            SizingMode::Dynamic(_, max) => self.content.len() != max,
         }
     }
 
@@ -92,24 +135,31 @@ impl<K> Inventory<K> {
 
     }
 
+    /// Checks if the inventory contains at least one `ItemInstance` of the specified key.
     pub fn has(&self, key: K) -> bool {
-
+        self.content.iter().any(|ii| ii.key == key)
     }
 
+    /// Gets an immutable reference to the `ItemInstance` at the specified index.
     pub fn get(&self, idx: u32) -> Option<&ItemInstance<K>> {
-        
+        self.content.get(idx)
     }
 
+    /// Gets a mutable reference to the `ItemInstance` at the specified index.
     pub fn get_mut(&self, idx: u32) -> Option(&mut ItemInstance<K>) {
-
+        self.content.get_mut(idx)
     }
 
-    pub fn get_key(&self, key: K) -> Vec<&ItemInstance<K>> {
-
+    /// Finds the item instances using the specified key. Returns an iterator of immutable
+    /// references.
+    pub fn get_key(&self, key: K) -> Iterator<Item = <&mut ItemInstance<K>>> {
+        self.content.iter().filter(|ii| ii.key == key)
     }
 
-    pub fn get_key_mut(&mut self, key: K) -> Vec<&mut ItemInstance<K>> {
-        
+    /// Finds the item instances using the specified key. Returns an iterator of mutable
+    /// references.
+    pub fn get_key_mut(&mut self, key: K) -> Iterator<Item = <&mut ItemInstance<K>>> {
+       self.content.iter_mut().filter(|ii| ii.key == key) 
     }
 
     pub fn insert_into(&mut self, item: ItemInstance<K>) -> Result<(), ItemError> {
@@ -121,7 +171,11 @@ impl<K> Inventory<K> {
     }
 
     pub fn first_empty_slot(&self) -> Option<u32> {
-
+        match self.move_to_front_mode {
+            MoveToFrontMode::None => 
+            MoveToFrontMode::TakeLast | MoveToFrontMode::Offset => {
+                
+        }
     }
 
     pub fn first_empty_slot_filtered(&self, 
