@@ -1,3 +1,5 @@
+
+use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::collections::HashMap;
 
@@ -18,6 +20,7 @@ pub struct ItemDefinition<K, T, D> {
 pub struct ItemInstance<K> {
     pub item_key: K,
     pub count: usize,
+    #[new(default)]
     pub durability: Option<usize>,
 }
 
@@ -68,7 +71,7 @@ pub struct Inventory<K, T, S: SlotType<T>> {
     _phantom: PhantomData<T>,
 }
 
-impl<K: PartialEq + Clone, T, S: SlotType<T>> Inventory<K, T, S> {
+impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>> Inventory<K, T, S> {
 
     /// Will attempt to decrease the durability of the item at the specified index.
     /// If the item has no durability value (None) or a non zero durability, it will return this
@@ -121,7 +124,10 @@ impl<K: PartialEq + Clone, T, S: SlotType<T>> Inventory<K, T, S> {
     // TODO transfer no target (ie transfer all)
 
     pub fn transfer(&mut self, from_idx: usize, target: &mut Inventory<K, T, S>, to_idx: usize, quantity: usize, with_overflow: bool) -> Result<(), ItemError<K>> {
-        unimplemented!()
+        let mv = self.delete(from_idx, quantity)?;
+        target.insert_into(to_idx, mv)?;
+        // TODO overflow control
+        Ok(())
     }
 
     pub fn transfer_stack(&mut self, from_idx: usize, target: &mut Inventory<K, T, S>, to_idx: usize, with_overflow: bool) -> Result<(), ItemError<K>> {
@@ -133,7 +139,9 @@ impl<K: PartialEq + Clone, T, S: SlotType<T>> Inventory<K, T, S> {
     }
 
     pub fn move_item(&mut self, from_idx: usize, to_idx: usize, quantity: usize, with_overflow: bool) -> Result<(), ItemError<K>> {
-        unimplemented!()
+        let mv = self.delete(from_idx, quantity)?;
+        self.insert_into(to_idx, mv)?;
+        Ok(())
     }
 
     // TODO: swap item stacks
@@ -150,7 +158,8 @@ impl<K: PartialEq + Clone, T, S: SlotType<T>> Inventory<K, T, S> {
         if let Some(Some(ii)) = self.content.get_mut(idx) {
             if ii.count >= quantity {
                 ii.count -= quantity;
-                let ret = ItemInstance::new(ii.item_key.clone(), quantity, ii.durability.clone());
+                let mut ret = ItemInstance::new(ii.item_key.clone(), quantity);
+                ret.durability = ii.durability.clone();
 
                 if ii.count == 0 {
                     self.remove_slot(idx);
@@ -197,10 +206,27 @@ impl<K: PartialEq + Clone, T, S: SlotType<T>> Inventory<K, T, S> {
         }
     }
 
-    // TODO
-    /*pub fn delete_key(&mut self, key: K, quantity: usize) -> Result<ItemInstance<K>, ItemError<K>> {
-
-    }*/
+    
+    pub fn delete_key(&mut self, key: &K, quantity: usize) -> Result<ItemInstance<K>, ItemError<K>> {
+        if !self.has_quantity(key, quantity) {
+            return Err(ItemError::NotEnoughQuantity);
+        }
+        let mut remaining = quantity;
+        for idx in self.content.iter().enumerate().filter(|(_, ii)| ii.is_some() && ii.as_ref().unwrap().item_key == *key).map(|(idx, _)| idx).collect::<Vec<_>>() {
+            let avail = self.content.get(idx).as_ref().unwrap().as_ref().unwrap().count;
+            let rm = if avail >= remaining {
+                remaining
+            } else {
+                avail
+            };
+            remaining -= rm;
+            self.delete(idx, rm).expect("Failed to delete from item stack during delete_key call. This is a bug.");
+            if remaining == 0 {
+                return Ok(ItemInstance::new(key.clone(), quantity));
+            }
+        }
+        unreachable!();
+    }
 
     pub fn has_quantity(&self, key: &K, quantity: usize) -> bool {
         let sum: usize = self.content.iter().flatten().filter(|ii| ii.item_key == *key).map(|ii| ii.count).sum();
@@ -237,6 +263,7 @@ impl<K: PartialEq + Clone, T, S: SlotType<T>> Inventory<K, T, S> {
     }
 
     pub fn insert_into(&mut self, idx: usize, item: ItemInstance<K>) -> Result<(), ItemError<K>> {
+        // TODO match keys and see if stackable
         if let Some(opt) = self.content.get_mut(idx) {
             if opt.is_some() {
                 return Err(ItemError::SlotOccupied);
@@ -292,10 +319,13 @@ impl<K: PartialEq + Clone, T, S: SlotType<T>> Inventory<K, T, S> {
         }
     }
 
+    // TODO first insertable for key: &K
+
     //pub fn first_empty_slot_filtered(&self, 
 }
 
-pub enum ItemError<K: PartialEq> {
+#[derive(Debug)]
+pub enum ItemError<K: PartialEq + Debug> {
     StackOverflow(ItemInstance<K>),
     InventoryFull,
     InventoryOverflow(Vec<ItemInstance<K>>),
