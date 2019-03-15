@@ -115,7 +115,7 @@ WIP
 
 ## Contact
 
-When possible, ask questions and report issues through Github's issues page (at the top of this page).
+When possible, report issues through Github's issues page (at the top of this page).
 
-Please check using the search function if your issue or question was already reported and is in a closed issue.
+Questions can be asked in our gitter channel. See the badge at the top of the this page.
 
