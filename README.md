@@ -8,6 +8,8 @@
 [gitter_badge]: https://gitter.im/OpenSourceGameFeatures/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 
 Support what I do on [Patreon](https://www.patreon.com/jojolepro).
+
+
 The goal of the library is to share common game features between developers.
 
 # Open Source Game Features
@@ -112,5 +114,6 @@ WIP
 ## Contact
 
 When possible, ask questions and report issues through Github's issues page (at the top of this page).
+
 Please check using the search function if your issue or question was already reported and is in a closed issue.
 
