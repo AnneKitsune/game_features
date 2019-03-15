@@ -1,4 +1,3 @@
-
 pub struct Tiered<T> {
     pub tier: u32,
     pub element: T,

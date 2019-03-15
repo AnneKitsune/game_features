@@ -9,7 +9,6 @@ pub struct Faction {
 
 impl Faction {
     pub fn claim_from(&mut self, other: &mut Faction, settings: &FactionSettings) -> FactionResult {
-
         Ok(())
     }
 }
@@ -41,13 +40,12 @@ pub enum FactionError {
     UseDenied,
 }
 
-
 pub struct LandClaimSettings {
     pub claim_size: [f32; 3],
 }
 
 impl LandClaimSettings {
-    pub fn claim_id_from_position(&self, pos: &[f32;3]) -> (i32, i32, i32) {
+    pub fn claim_id_from_position(&self, pos: &[f32; 3]) -> (i32, i32, i32) {
         let x = pos[0] / self.claim_size[0];
         let y = pos[1] / self.claim_size[1];
         let z = if self.claim_size[2] != 0.0 {

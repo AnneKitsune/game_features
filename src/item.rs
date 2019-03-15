@@ -1,7 +1,6 @@
-
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::marker::PhantomData;
-use std::collections::HashMap;
 
 // TODO: extensibility. ie weight
 
@@ -30,7 +29,6 @@ pub struct ItemInstance<K, U: Default> {
     pub user_data: U,
 }
 
-
 pub type ItemDefinitionRepository<K, T, D> = HashMap<K, ItemDefinition<K, T, D>>;
 
 pub trait SlotType<T> {
@@ -53,10 +51,10 @@ impl SlotType<usize> for usize {
 #[derive(new, Clone, Serialize, Deserialize, Debug)]
 pub enum InventorySizingMode {
     /// The inventory uses a fixed size.
-    Fixed{size: usize},
+    Fixed { size: usize },
     /// The inventory grows and shrinks depending on the content.
     /// Slot restrictions are ignored in this mode.
-    Dynamic{min_size: usize, max_size: usize},
+    Dynamic { min_size: usize, max_size: usize },
 }
 
 /// The way items are removed from the inventory. Indicates if empty spots are left, and if not, how to fill them.
@@ -78,7 +76,7 @@ pub enum MoveToFrontMode {
 
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
 pub struct Inventory<K, T, S: SlotType<T>, U: Default> {
-    pub content: Vec<Option<ItemInstance<K, U>>>, 
+    pub content: Vec<Option<ItemInstance<K, U>>>,
     /// Restricts what kind of item can go in different slots.
     /// This is not compatible with `InventorySizingMode::Dynamic`.
     #[builder(default)]
@@ -92,8 +90,9 @@ pub struct Inventory<K, T, S: SlotType<T>, U: Default> {
     _phantom: PhantomData<T>,
 }
 
-impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug> Inventory<K, T, S, U> {
-
+impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug>
+    Inventory<K, T, S, U>
+{
     pub fn new_fixed(count: usize) -> Inventory<K, T, S, U> {
         let mut content = Vec::with_capacity(count);
         (0..count).for_each(|_| content.push(None));
@@ -161,23 +160,34 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
     /// Looks if there is enough space to add another item stack.
     pub fn has_space(&self) -> bool {
         match self.sizing_mode {
-            InventorySizingMode::Fixed{size} => {
-                self.content.iter().any(|o| o.is_none())
-            },
-            InventorySizingMode::Dynamic{min_size, max_size} => self.content.len() != max_size,
+            InventorySizingMode::Fixed { size } => self.content.iter().any(|o| o.is_none()),
+            InventorySizingMode::Dynamic { min_size, max_size } => self.content.len() != max_size,
         }
     }
 
     // TODO transfer no target (ie transfer all)
 
-    pub fn transfer(&mut self, from_idx: usize, target: &mut Inventory<K, T, S, U>, to_idx: usize, quantity: usize, with_overflow: bool) -> Result<(), ItemError<K, U>> {
+    pub fn transfer(
+        &mut self,
+        from_idx: usize,
+        target: &mut Inventory<K, T, S, U>,
+        to_idx: usize,
+        quantity: usize,
+        with_overflow: bool,
+    ) -> Result<(), ItemError<K, U>> {
         let mv = self.delete(from_idx, quantity)?;
         target.insert_into(to_idx, mv)?;
         // TODO overflow control
         Ok(())
     }
 
-    pub fn transfer_stack(&mut self, from_idx: usize, target: &mut Inventory<K, T, S, U>, to_idx: usize, with_overflow: bool) -> Result<(), ItemError<K, U>> {
+    pub fn transfer_stack(
+        &mut self,
+        from_idx: usize,
+        target: &mut Inventory<K, T, S, U>,
+        to_idx: usize,
+        with_overflow: bool,
+    ) -> Result<(), ItemError<K, U>> {
         if let Some(Some(ii)) = self.content.get(from_idx) {
             self.transfer(from_idx, target, to_idx, ii.count, with_overflow)
         } else {
@@ -185,7 +195,13 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
         }
     }
 
-    pub fn move_item(&mut self, from_idx: usize, to_idx: usize, quantity: usize, with_overflow: bool) -> Result<(), ItemError<K, U>> {
+    pub fn move_item(
+        &mut self,
+        from_idx: usize,
+        to_idx: usize,
+        quantity: usize,
+        with_overflow: bool,
+    ) -> Result<(), ItemError<K, U>> {
         let mv = self.delete(from_idx, quantity)?;
         self.insert_into(to_idx, mv)?;
         Ok(())
@@ -193,7 +209,12 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
 
     // TODO: swap item stacks
 
-    pub fn move_stack(&mut self, from_idx: usize, to_idx: usize, with_overflow: bool) -> Result<(), ItemError<K, U>> {
+    pub fn move_stack(
+        &mut self,
+        from_idx: usize,
+        to_idx: usize,
+        with_overflow: bool,
+    ) -> Result<(), ItemError<K, U>> {
         if let Some(Some(ii)) = self.content.get(from_idx) {
             self.move_item(from_idx, to_idx, ii.count, with_overflow)
         } else {
@@ -201,7 +222,11 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
         }
     }
 
-    pub fn delete(&mut self, idx: usize, quantity: usize) -> Result<ItemInstance<K, U>, ItemError<K, U>> {
+    pub fn delete(
+        &mut self,
+        idx: usize,
+        quantity: usize,
+    ) -> Result<ItemInstance<K, U>, ItemError<K, U>> {
         if let Some(Some(ii)) = self.content.get_mut(idx) {
             if ii.count >= quantity {
                 ii.count -= quantity;
@@ -253,21 +278,35 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
         }
     }
 
-    
-    pub fn delete_key(&mut self, key: &K, quantity: usize) -> Result<ItemInstance<K, U>, ItemError<K, U>> {
+    pub fn delete_key(
+        &mut self,
+        key: &K,
+        quantity: usize,
+    ) -> Result<ItemInstance<K, U>, ItemError<K, U>> {
         if !self.has_quantity(key, quantity) {
             return Err(ItemError::NotEnoughQuantity);
         }
         let mut remaining = quantity;
-        for idx in self.content.iter().enumerate().filter(|(_, ii)| ii.is_some() && ii.as_ref().unwrap().item_key == *key).map(|(idx, _)| idx).collect::<Vec<_>>() {
-            let avail = self.content.get(idx).as_ref().unwrap().as_ref().unwrap().count;
-            let rm = if avail >= remaining {
-                remaining
-            } else {
-                avail
-            };
+        for idx in self
+            .content
+            .iter()
+            .enumerate()
+            .filter(|(_, ii)| ii.is_some() && ii.as_ref().unwrap().item_key == *key)
+            .map(|(idx, _)| idx)
+            .collect::<Vec<_>>()
+        {
+            let avail = self
+                .content
+                .get(idx)
+                .as_ref()
+                .unwrap()
+                .as_ref()
+                .unwrap()
+                .count;
+            let rm = if avail >= remaining { remaining } else { avail };
             remaining -= rm;
-            self.delete(idx, rm).expect("Failed to delete from item stack during delete_key call. This is a bug.");
+            self.delete(idx, rm)
+                .expect("Failed to delete from item stack during delete_key call. This is a bug.");
             if remaining == 0 {
                 return Ok(ItemInstance::new(key.clone(), quantity));
             }
@@ -276,13 +315,21 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
     }
 
     pub fn has_quantity(&self, key: &K, quantity: usize) -> bool {
-        let sum: usize = self.content.iter().flatten().filter(|ii| ii.item_key == *key).map(|ii| ii.count).sum();
+        let sum: usize = self
+            .content
+            .iter()
+            .flatten()
+            .filter(|ii| ii.item_key == *key)
+            .map(|ii| ii.count)
+            .sum();
         sum >= quantity
     }
 
     /// Checks if the inventory contains at least one `ItemInstance` of the specified key.
     pub fn has(&self, key: &K) -> bool {
-        self.content.iter().any(|ii| ii.is_some() && ii.as_ref().unwrap().item_key == *key)
+        self.content
+            .iter()
+            .any(|ii| ii.is_some() && ii.as_ref().unwrap().item_key == *key)
     }
 
     /// Gets an immutable reference to the `ItemInstance` at the specified index.
@@ -292,24 +339,37 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
 
     /// Gets a mutable reference to the `ItemInstance` at the specified index.
     pub fn get_mut(&mut self, idx: usize) -> Option<&mut ItemInstance<K, U>> {
-        self.content.get_mut(idx).map(|opt| opt.as_mut()).unwrap_or(None)
+        self.content
+            .get_mut(idx)
+            .map(|opt| opt.as_mut())
+            .unwrap_or(None)
     }
 
     /// Finds the item instances using the specified key. Returns an iterator of immutable
     /// references.
     pub fn get_key(&self, key: &K) -> impl Iterator<Item = &ItemInstance<K, U>> {
         let key = key.clone();
-        self.content.iter().flatten().filter(move |ii| ii.item_key == key)
+        self.content
+            .iter()
+            .flatten()
+            .filter(move |ii| ii.item_key == key)
     }
 
     /// Finds the item instances using the specified key. Returns an iterator of mutable
     /// references.
     pub fn get_key_mut(&mut self, key: &K) -> impl Iterator<Item = &mut ItemInstance<K, U>> {
         let key = key.clone();
-        self.content.iter_mut().flatten().filter(move |ii| ii.item_key == key)
+        self.content
+            .iter_mut()
+            .flatten()
+            .filter(move |ii| ii.item_key == key)
     }
 
-    pub fn insert_into(&mut self, idx: usize, item: ItemInstance<K, U>) -> Result<(), ItemError<K, U>> {
+    pub fn insert_into(
+        &mut self,
+        idx: usize,
+        item: ItemInstance<K, U>,
+    ) -> Result<(), ItemError<K, U>> {
         // TODO match keys and see if stackable
         if let Some(opt) = self.content.get_mut(idx) {
             if opt.is_some() {
@@ -327,8 +387,8 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
             self.insert_into(slot, item)
         } else {
             match self.sizing_mode {
-                InventorySizingMode::Fixed{size} => Err(ItemError::InventoryFull),
-                InventorySizingMode::Dynamic{min_size, max_size} => {
+                InventorySizingMode::Fixed { size } => Err(ItemError::InventoryFull),
+                InventorySizingMode::Dynamic { min_size, max_size } => {
                     // Attempt to make room.
                     if self.has_space() {
                         self.content.push(None);
@@ -344,18 +404,23 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
     pub fn first_empty_slot(&self) -> Option<usize> {
         match self.move_to_front {
             MoveToFrontMode::None => {
-                let mut ret = self.content.iter().enumerate().find(|t| t.1.is_none()).map(|t| t.0);
-                if let InventorySizingMode::Dynamic{min_size, max_size} = self.sizing_mode {
+                let mut ret = self
+                    .content
+                    .iter()
+                    .enumerate()
+                    .find(|t| t.1.is_none())
+                    .map(|t| t.0);
+                if let InventorySizingMode::Dynamic { min_size, max_size } = self.sizing_mode {
                     if ret.is_none() && self.content.len() < max_size {
                         ret = Some(self.content.len());
                     }
                 }
                 ret
-            },
+            }
             MoveToFrontMode::TakeLast | MoveToFrontMode::Offset => {
                 let max = match self.sizing_mode {
-                    InventorySizingMode::Fixed{size} => size,
-                    InventorySizingMode::Dynamic{min_size, max_size} => max_size,
+                    InventorySizingMode::Fixed { size } => size,
+                    InventorySizingMode::Dynamic { min_size, max_size } => max_size,
                 };
                 if self.content.len() != max {
                     Some(self.content.len())
@@ -368,7 +433,7 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
 
     // TODO first insertable for key: &K
 
-    //pub fn first_empty_slot_filtered(&self, 
+    //pub fn first_empty_slot_filtered(&self,
 }
 
 #[derive(Debug)]
@@ -415,7 +480,7 @@ mod test {
     struct CustomItemDefinitionData {
         pub weight: f32,
     }
-    
+
     #[derive(new, Debug, Clone, Serialize, Deserialize)]
     struct CustomItemInstanceData {
         pub xp: f32,
@@ -434,14 +499,28 @@ mod test {
         let mut inv = Inventory::<u32, (), (), ()>::new_fixed(8);
         inv.insert(ii).expect("");
     }
-    
+
     #[test]
     fn complex_items() {
-        // Weight, enchants and Effects 
+        // Weight, enchants and Effects
         // TODO: Effectors
-        
-        let item_def = ItemDefinitionBuilder::new().item_key(1u32).item_type(ItemType::Regular).name(String::from("Apple")).friendly_name("apple").description("Food is nice").maximum_stack(16).maximum_durability(None).user_data(CustomItemDefinitionData::new(1.0)).build();
-        let ii = ItemInstanceBuilder::new().item_key(1u32).quantity(1).durability(Some(64)).user_data(CustomItemInstanceData::new(0.0)).build();
+
+        let item_def = ItemDefinitionBuilder::new()
+            .item_key(1u32)
+            .item_type(ItemType::Regular)
+            .name(String::from("Apple"))
+            .friendly_name("apple")
+            .description("Food is nice")
+            .maximum_stack(16)
+            .maximum_durability(None)
+            .user_data(CustomItemDefinitionData::new(1.0))
+            .build();
+        let ii = ItemInstanceBuilder::new()
+            .item_key(1u32)
+            .quantity(1)
+            .durability(Some(64))
+            .user_data(CustomItemInstanceData::new(0.0))
+            .build();
         let mut inv = Inventory::<u32, ItemType, ItemType, CustomItemInstanceData>::new_fixed(8);
         inv.insert(ii).expect("");
     }

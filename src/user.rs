@@ -6,4 +6,3 @@ pub struct User<T> {
 }
 
 pub type UserRepository<T> = Vec<User<T>>;
-

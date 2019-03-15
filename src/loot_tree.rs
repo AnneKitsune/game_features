@@ -1,5 +1,5 @@
-use rand::{thread_rng, Rng};
 use partial_function::LowerPartialFunction;
+use rand::{thread_rng, Rng};
 
 #[derive(Deserialize)]
 pub struct LootTreeNode<R> {

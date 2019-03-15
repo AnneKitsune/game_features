@@ -8,29 +8,27 @@ extern crate derive_new;
 extern crate derive_builder;
 
 mod chat;
+mod faction;
 mod item;
 mod loot_tree;
+mod permissions;
 mod skill;
 mod stat;
-mod user_group;
-mod user;
-mod faction;
-mod permissions;
 mod statistics;
 mod tier;
+mod user;
+mod user_group;
 mod user_management;
 
 pub use self::chat::*;
+pub use self::faction::*;
 pub use self::item::*;
 pub use self::loot_tree::*;
+pub use self::permissions::*;
 pub use self::skill::*;
 pub use self::stat::*;
-pub use self::user_group::*;
-pub use self::user::*;
-pub use self::faction::*;
-pub use self::permissions::*;
 pub use self::statistics::*;
 pub use self::tier::*;
+pub use self::user::*;
+pub use self::user_group::*;
 pub use self::user_management::*;
-
-

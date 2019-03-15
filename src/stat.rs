@@ -1,4 +1,3 @@
-
 // Different properties of a player/item/entity
 
 pub trait Stat {}
