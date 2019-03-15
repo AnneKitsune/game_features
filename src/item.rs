@@ -669,13 +669,15 @@ mod test {
             .unwrap();
         let ii = ItemInstanceBuilder::default()
             .key(1u32)
-            .quantity(1)
+            .quantity(4)
             .durability(Some(64))
             .user_data(CustomItemInstanceData::new(0.0))
             .build()
             .unwrap();
-        let mut inv =
-            Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
-        inv.insert(ii).expect("");
+        let mut inv = Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
+        let mut inv2 = Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
+        inv.insert(ii.clone()).expect("");
+        inv2.insert(ii).expect("");
+        inv.transfer(0, &mut inv2, 1, 2, false).expect("");
     }
 }
