@@ -117,5 +117,5 @@ WIP
 
 When possible, report issues through Github's issues page (at the top of this page).
 
-Questions can be asked in our gitter channel. See the badge at the top of the this page.
+Questions can be asked in our gitter channel. See the badge at the top of this page.
 
