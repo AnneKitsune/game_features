@@ -1,25 +1,41 @@
+[![Crates.io][s1]][ci] [![docs page][docs-badge]][docs] [![Gitter][gitter]][gitter_badge]
+
+[s1]: https://img.shields.io/crates/v/game_features.svg
+[ci]: https://crates.io/crates/game_features
+[docs-badge]: https://img.shields.io/badge/docs-website-blue.svg
+[docs]: https://docs.rs/game_features
+[gitter]: https://badges.gitter.im/OpenSourceGameFeatures/general.svg
+[gitter_badge]: https://gitter.im/OpenSourceGameFeatures/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+
 Support what I do on [Patreon](https://www.patreon.com/jojolepro).
-
-
 The goal of the library is to share common game features between developers.
 
 # Open Source Game Features
 
 Are you tired of games keeping their features for themselves?
 
-Wouldn't it be great if we could share the general features that are really common, and spend more time working on what truly matters: making your game unique and enjoyable?
+Wouldn't it be great if we could share the general features that are really common and spend the time we would save making awesome games?
 
 No one wants to spend 30 hours programming an inventory system that is (almost) the same as those currently released in closed source games.
 
-Its time we change this. By making all the general game features, like inventory systems, user management, game chat, permissions, and many others open source, the game developement community will finally be able to focus on what really matters: Making their game unique and enjoyable.
+Its time we change this!
 
-This library aims to do just that. It is a repository where we will share those reusable game pieces.
+By making as many of the general game features as possible open source, the game developement community will finally be able to focus on what really matters: Making their game unique and enjoyable! 
+
+This library aims to do just that. It is a repository where we will share and develop together those reusable game pieces.
+
+Here's some examples of such game features:
+* Inventory systems
+* User management
+* Game chat
+* Permissions 
+* And many others
 
 ## Principles
 
 We aim to be data-oriented to facilitate the integration in whichever workflow you have.
 
-Everything here is composed of serializable data. We are not constraining you to a specific way of handling changes in the state.
+Everything here is composed of serializable data and generics. We are not constraining you to a specific way of handling changes in the data.
 
 Integrating those game features is easy:
 * Take the events coming from your game engine or game logic
@@ -36,6 +52,7 @@ Even better, since all data is meant to be serialized, and is created by composi
 * Inspect it
 * Debug changes
 * Painlessly refactor
+* **[Integrate in other languages and in databases](#Compatibility)**
 
 ## Features
 
@@ -45,13 +62,13 @@ Even better, since all data is meant to be serialized, and is created by composi
 * Complex Loot Trees
 
 #### Planned
+
 * Player Authentification
 * User Management (kick, ban, mute, etc)
 * User Permissions
 * Group Based Chat Formatting and Scopes
 * World ownership and protection systems
 * Faction-based claiming systems.
-
 
 ## Contributing
 
