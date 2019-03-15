@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-// TODO: extensibility. ie weight
-
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
 pub struct ItemDefinition<K, T, D: Default> {
     pub key: K,
@@ -71,7 +69,6 @@ pub enum MoveToFrontMode {
 // for even more complex restrictions, like limit max weight -> wrap inventory in other struct and make
 // the checks there.
 
-// TODO Inventory definition separated from inventory instance?
 // TODO Complete slot restriction integration
 
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
