@@ -48,7 +48,7 @@ pub struct ItemDefinition<K, T, D: Default> {
 ///
 /// Generic Types:
 /// * K: Type of the key. Usually an enum or a number (ie u32).
-/// * U: The type of the custom user data. If you don't have any, use the `()` type. 
+/// * U: The type of the custom user data. If you don't have any, use the `()` type.
 /// It can (and probably should) be different than the custom user data used on `ItemInstance`s
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
 pub struct ItemInstance<K, U: Default> {
@@ -130,8 +130,9 @@ pub struct Inventory<K, T, S: SlotType<T>, U: Default> {
     _phantom: PhantomData<T>,
 }
 
-impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug> Inventory<K, T, S, U> {
-
+impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug>
+    Inventory<K, T, S, U>
+{
     /// Creates a new `Inventory` with a fixed slot count.
     pub fn new_fixed(count: usize) -> Inventory<K, T, S, U> {
         let mut content = Vec::with_capacity(count);
@@ -237,7 +238,7 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
     /// target directory.
     /// with_overflow indicates if the item can be spread out in free slots in case that the target
     /// slot does not have enough free space.
-    /// 
+    ///
     /// Errors:
     /// See `Transform::delete` and `Transform::insert_into`.
     pub fn transfer_stack(
@@ -273,7 +274,7 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
     }
 
     // TODO: swap item stacks
-    
+
     /// Moves a full stack of item from a slot to another.
     /// with_overflow indicates if the item can be spread out in free slots in case that the target
     /// slot does not have enough free space.
@@ -294,7 +295,7 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
     }
 
     /// Deletes a specified quantity of item from the specified slot.
-    /// 
+    ///
     /// Errors:
     /// * NotEnoughQuantity: Not enough items are present in the item stack.
     /// * SlotEmpty: Nothing is present in the specified slot.
@@ -636,7 +637,9 @@ mod test {
         fn can_insert_into(&self, other: &ItemType) -> bool {
             match *self {
                 CustomSlotType::Regular => true,
-                CustomSlotType::Equipment => *other == ItemType::Weapon || *other == ItemType::Armor,
+                CustomSlotType::Equipment => {
+                    *other == ItemType::Weapon || *other == ItemType::Armor
+                }
             }
         }
     }
@@ -671,7 +674,8 @@ mod test {
             .user_data(CustomItemInstanceData::new(0.0))
             .build()
             .unwrap();
-        let mut inv = Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
+        let mut inv =
+            Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
         inv.insert(ii).expect("");
     }
 }
