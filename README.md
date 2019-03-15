@@ -12,6 +12,8 @@ Support what I do on [Patreon](https://www.patreon.com/jojolepro).
 
 The goal of the library is to share common game features between developers.
 
+Fully cross platform and on its way to be cross language!
+
 # Open Source Game Features
 
 Are you tired of games keeping their features for themselves?
