@@ -87,9 +87,7 @@ pub struct Inventory<K, S: SlotType, U: Default> {
     pub sizing_mode: InventorySizingMode,
 }
 
-impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug>
-    Inventory<K, S, U>
-{
+impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inventory<K, S, U> {
     pub fn new_fixed(count: usize) -> Inventory<K, S, U> {
         let mut content = Vec::with_capacity(count);
         (0..count).for_each(|_| content.push(None));
@@ -156,7 +154,10 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug>
     pub fn has_space(&self) -> bool {
         match self.sizing_mode {
             InventorySizingMode::Fixed { size: _ } => self.content.iter().any(|o| o.is_none()),
-            InventorySizingMode::Dynamic { min_size: _, max_size } => self.content.len() != max_size,
+            InventorySizingMode::Dynamic {
+                min_size: _,
+                max_size,
+            } => self.content.len() != max_size,
         }
     }
 
@@ -383,7 +384,10 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug>
         } else {
             match self.sizing_mode {
                 InventorySizingMode::Fixed { size: _ } => Err(ItemError::InventoryFull),
-                InventorySizingMode::Dynamic { min_size: _, max_size: _ } => {
+                InventorySizingMode::Dynamic {
+                    min_size: _,
+                    max_size: _,
+                } => {
                     // Attempt to make room.
                     if self.has_space() {
                         self.content.push(None);
@@ -405,7 +409,11 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug>
                     .enumerate()
                     .find(|t| t.1.is_none())
                     .map(|t| t.0);
-                if let InventorySizingMode::Dynamic { min_size: _, max_size } = self.sizing_mode {
+                if let InventorySizingMode::Dynamic {
+                    min_size: _,
+                    max_size,
+                } = self.sizing_mode
+                {
                     if ret.is_none() && self.content.len() < max_size {
                         ret = Some(self.content.len());
                     }
@@ -415,7 +423,10 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug>
             MoveToFrontMode::TakeLast | MoveToFrontMode::Offset => {
                 let max = match self.sizing_mode {
                     InventorySizingMode::Fixed { size } => size,
-                    InventorySizingMode::Dynamic { min_size: _, max_size } => max_size,
+                    InventorySizingMode::Dynamic {
+                        min_size: _,
+                        max_size,
+                    } => max_size,
                 };
                 if self.content.len() != max {
                     Some(self.content.len())
@@ -522,13 +533,15 @@ mod test {
             .maximum_stack(16)
             .maximum_durability(None)
             .user_data(CustomItemDefinitionData::new(1.0))
-            .build().unwrap();
+            .build()
+            .unwrap();
         let ii = ItemInstanceBuilder::default()
             .key(1u32)
             .quantity(1)
             .durability(Some(64))
             .user_data(CustomItemInstanceData::new(0.0))
-            .build().unwrap();
+            .build()
+            .unwrap();
         let mut inv = Inventory::<u32, ItemType, CustomItemInstanceData>::new_fixed(8);
         inv.insert(ii).expect("");
     }
