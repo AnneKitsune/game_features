@@ -105,7 +105,7 @@ Add this line to your Cargo.toml file:
 game_features = "*"
 ```
 
-For more information on each feature, see the [documentation]().
+For more information on each feature, see the docs badge at the top of this page.
 Alternatively, for usage examples, there are unit tests at the bottom of each file (except lib.rs) in the src/ directory which are good examples.
 
 Good luck! Feel free to ask any questions you may have.
@@ -115,7 +115,7 @@ WIP
 
 ## Contact
 
-When possible, report issues through Github's issues page (at the top of this page).
+When possible, report issues through Github's issues page.
 
 Questions can be asked in our gitter channel. See the badge at the top of this page.
 
