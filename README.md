@@ -67,12 +67,33 @@ Even better, since all data is meant to be serialized, and is created by composi
 
 #### Planned
 
+* Statuses, effects and transitions
 * Player Authentification
 * User Management (kick, ban, mute, etc)
 * User Permissions
 * Group Based Chat Formatting and Scopes
 * World ownership and protection systems
 * Faction-based claiming systems.
+
+
+#### Statuses, what are those?
+
+This will be one of the main features of this library.
+
+That's a bit of an abstract concept, so I'll use an example to explain it.
+
+Let's say you have a heat/temperature value associated to the player.
+
+The inventory attached to the player will pick that up and if the heat is high enough, it will trigger an item transition on the items inside (smelt iron ore into iron bar) and an effect (burn the player).
+
+This can be abstracted to represent the majority of the game state. For example:
+
+* Player speed, health and mana
+* Electricity propagation through wires and consumed by machines
+* Spoiling food
+* Trading currency, buying and selling items
+
+In this case, the heat is the status, the transition is the ore smelting and the effect is burning.
 
 ## Contributing
 
