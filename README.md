@@ -68,7 +68,7 @@ Even better, since all data is meant to be serialized, and is created by composi
 #### Planned
 
 * Statuses, effects and transitions
-* Player Authentification
+* Player Authentication
 * User Management (kick, ban, mute, etc)
 * User Permissions
 * Group Based Chat Formatting and Scopes
