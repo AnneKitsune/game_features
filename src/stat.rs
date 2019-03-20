@@ -1,22 +1,22 @@
 // Different properties of a player/item/entity
 
-pub trait Stat {}
-
-// StatEffector = Effect
-
-pub struct EffectDefinition<K> {
-    pub key: K,
-    pub name: String,
-    pub description: String,
+#[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
+pub struct StatDefinition<K> {
+    key: K,
+    name: String,
+    friendly_name: String,
+    default_value: f64,
+    #[new(default)]
+    min_value: Option<f64>,
+    #[new(default)]
+    max_value: Option<f64>,
+    #[new(default)]
+    icon_path: Option<String>,
 }
 
-pub struct EffectInstance<K> {
-    pub effector: K,
+#[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
+pub struct StatInstance<K> {
+    key: K,
+    value: f64,
 }
 
-// Stat of T driving a transition of T to T'
-pub trait StatTransition {
-    // stat transition can fail (ie missing mana)
-
-    // add key
-}
