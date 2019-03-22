@@ -8,7 +8,6 @@ pub enum WeaponMode {
 
 pub struct WeaponDefinition<K> {
     pub key: K,
-    pub base_damage: f64,
     pub weapon_mode: WeaponMode,
     /// In case of burst, the number of times per second you can start a new burst sequence.
     pub fire_per_second: f64,
@@ -21,8 +20,15 @@ pub struct WeaponDefinition<K> {
     pub spread: SpreadPattern,
     pub spread_reduction_per_second: f64,
     pub bullet_penetration_damage_loss_percent: f64,
-    pub distance_damage_multiplier: PartialFunction<f64, f64>,
+    pub distance_damage_curve: PartialFunction<f64, f64>,
     pub show_crosshair: bool,
+}
+
+impl WeaponDefinition<K> {
+
+    pub fn base_damage(&self) -> f64 {
+        self.distance_damage_curve.evaluate(0.0).unwrap()
+    }
 }
 
 pub struct WeaponInstance<K> {
