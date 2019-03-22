@@ -19,6 +19,7 @@ mod tier;
 mod user;
 mod user_group;
 mod user_management;
+mod item_transition;
 
 pub use self::chat::*;
 pub use self::faction::*;
@@ -32,3 +33,5 @@ pub use self::tier::*;
 pub use self::user::*;
 pub use self::user_group::*;
 pub use self::user_management::*;
+pub use self::item_transition::*;
+
