@@ -38,10 +38,8 @@ impl<K> Unlockable<K> {
 
     /// Inserts a new value without changing the lock.
     /// Returns the previous inner value.
-    pub fn set(&mut self, new: K) -> K {
-        let i = self.inner;
+    pub fn set(&mut self, new: K) {
         self.inner = new;
-        i
     }
 
     /// Locks the inner value.
