@@ -31,8 +31,22 @@ pub struct StatInstance<K> {
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct StatSet<K: Hash+Eq> {
+    pub definitions: HashMap<K, StatDefinition<K>>,
     pub stats: HashMap<K, StatInstance<K>>,
-    pub active_stats_stats_effectors: Vec<Effector<K>>,
+    pub active_effectors: Vec<Effector<K>>,
+}
+
+impl<K: Hash+Eq+Clone> From<Vec<StatDefinition<K>>> for StatSet<K> {
+    fn from(t: Vec<StatDefinition<K>>) -> StatSet<K> {
+        let instances = t.iter().map(|s| (s.key.clone(), s.default_instance()))
+            .collect::<HashMap<_,_>>();
+        let defs = t.into_iter().map(|s| (s.key.clone(), s)).collect::<HashMap<_,_>>();
+        StatSet {
+            definitions: defs,
+            stats: instances,
+            active_effectors: vec![],
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
