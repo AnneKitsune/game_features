@@ -16,6 +16,12 @@ pub struct StatDefinition<K> {
     icon_path: Option<String>,
 }
 
+impl<K> StatDefinition<K> {
+    /// Creates the default StatInstance for this StatDefinition.
+    pub fn default_instance(&self) -> StatInstance<K> {
+        StatInstance::new(self.key.clone(), self.default_value)
+    }
+
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
 pub struct StatInstance<K> {
     pub key: K,
