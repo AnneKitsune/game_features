@@ -1,16 +1,19 @@
 use crate::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
-pub struct Unlockable<K, S, I> {
-    inner: K,
+pub struct Unlockable<U, K, S, I> {
+    pub id: U,
+    pub inner: K,
     pub is_unlocked: bool,
     #[new(default)]
     pub unlock_stat_conditions: Vec<StatCondition<S>>,
     #[new(default)]
     pub unlock_item_conditions: Vec<(I, usize, UseMode)>,
+    #[new(default)]
+    pub unlock_dependencies: Vec<U>,
 }
 
-impl<K, S, I> Unlockable<K, S, I> {
+impl<U, K, S, I> Unlockable<U, K, S, I> {
     /// Returns Some with the inner value if is_unlocked = true.
     /// Otherwise returns None
     pub fn try_get(&self) -> Option<&K> {
