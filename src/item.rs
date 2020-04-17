@@ -27,7 +27,7 @@ pub struct ItemDefinition<K, T, D: Default> {
     pub description: String,
     /// The maximum number of elements that can be in an item stack. Setting this value to 1
     /// disables the ability to stack this type of item.
-    pub maximum_stack: usize,
+    pub maximum_stack: Option<usize>,
     /// The default maximum durability of this item. Setting this to None means that this item type
     /// doesn't use the concept of durability and is unbreakable.
     pub maximum_durability: Option<usize>,
@@ -231,6 +231,7 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
         let mv = self.delete(from_idx, quantity)?;
         target.insert_into(to_idx, mv)?;
         // TODO overflow control
+        // TODO stack maximum size
         Ok(())
     }
 
