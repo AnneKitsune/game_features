@@ -3,14 +3,16 @@ use crate::*;
 // or
 // Stat buff
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
-pub struct SkillDefinition<K, S> {
+pub struct SkillDefinition<K, S, I> {
     pub key: K,
     pub name: String,
+    pub friendly_name: String,
     pub description: String,
     pub cooldown: f64,
     pub passive: bool,
     // stat usage
     pub conditions: Vec<StatCondition<S>>,
+    pub item_conditions: Vec<(I, usize, UseMode)>,
     pub stat_effectors: Vec<StatEffector<S>>,
 }
 

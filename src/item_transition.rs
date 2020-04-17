@@ -1,5 +1,6 @@
 use crate::*;
 
+// crafting
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
 pub struct ItemTransitionDefinition<K, I, S, U: Default> {
     pub key: K,

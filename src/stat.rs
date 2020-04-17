@@ -80,20 +80,27 @@ impl StatConditionType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct StatEffector<K> {
-    pub stat_key: K,
-    pub active_since: f64,
-    pub disable_in: Option<f64>,
+pub struct StatEffectorDefinition<E> {
+    pub effector_key: E,
+    // set to 0 for one shot
+    pub duration: Option<f64>,
     // TODO: modifier rules
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct ActiveStatEffectors<K> {
-    pub effectors: Vec<StatEffector<K>>,
+pub struct StatEffectorInstance<E> {
+    pub effector_key: E,
+    pub active_since: f64,
+    pub disable_in: Option<f64>,
 }
 
-impl<K: Hash+Eq> ActiveStatEffectors<K> {
-    pub fn update(&mut self, delta_time: f64, stat_set: &mut StatSet<K>) {
+#[derive(Debug, Clone, Serialize, Deserialize, new)]
+pub struct StatEffectorsSet<E> {
+    pub effectors: Vec<StatEffectorInstance<E>>,
+}
+
+impl<E: Hash+Eq> StatEffectorsSet<E> {
+    pub fn update(&mut self, delta_time: f64, stat_set: &mut StatSet<E>) {
         let mut rm_idx = vec![];
         for (idx, stat) in self.effectors.iter_mut().enumerate() {
             // TODO: apply modifier rules and ordering.
