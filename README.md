@@ -1,18 +1,14 @@
-[![Crates.io][s1]][ci] [![docs page][docs-badge]][docs] [![Gitter][gitter]][gitter_badge]
+[![Crates.io][s1]][ci] [![docs page][docs-badge]][docs]
 
 [s1]: https://img.shields.io/crates/v/game_features.svg
 [ci]: https://crates.io/crates/game_features
 [docs-badge]: https://img.shields.io/badge/docs-website-blue.svg
 [docs]: https://docs.rs/game_features
-[gitter]: https://badges.gitter.im/OpenSourceGameFeatures/general.svg
-[gitter_badge]: https://gitter.im/OpenSourceGameFeatures/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 
 Support what I do on [Patreon](https://www.patreon.com/jojolepro).
 
 
 The goal of the library is to share common game features between developers.
-
-Fully cross platform and on its way to be cross language!
 
 # Open Source Game Features
 
@@ -51,12 +47,11 @@ Its that simple!
 
 Even better, since all data is meant to be serialized, and is created by composing structures together, you can easily:
 * Save the game state
-* Store it in a relational database
+* Store it in a relational database (or any file, really)
 * Load it into a running game
 * Inspect it
 * Debug changes
 * Painlessly refactor
-* **[Integrate in other languages and in databases](#Compatibility)**
 
 ## Features
 
@@ -64,10 +59,12 @@ Even better, since all data is meant to be serialized, and is created by composi
 
 * Extensible and fully-featured Inventory system
 * Complex Loot Trees
+* Stats, Stats Modifiers
+* Skills
+* Unlockables
 
 #### Planned
 
-* Statuses, effects and transitions
 * Player Authentication
 * User Management (kick, ban, mute, etc)
 * User Permissions
@@ -104,8 +101,6 @@ Yes, that means you will be able to use this library in your c, c++, c# projects
 
 ## Usage
 
-#### Rust
-
 Add this line to your Cargo.toml file:
 ```
 game_features = "*"
@@ -116,12 +111,7 @@ Alternatively, for usage examples, there are unit tests at the bottom of each fi
 
 Good luck! Feel free to ask any questions you may have.
 
-#### Other Languages
-WIP
-
 ## Contact
 
 When possible, report issues through Github's issues page.
-
-Questions can be asked in our gitter channel. See the badge at the top of this page.
 
