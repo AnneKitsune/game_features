@@ -33,7 +33,7 @@ pub struct StatInstance<K> {
 pub struct StatSet<K: Hash+Eq> {
     pub definitions: HashMap<K, StatDefinition<K>>,
     pub stats: HashMap<K, StatInstance<K>>,
-    pub active_effectors: Vec<Effector<K>>,
+    pub active_effectors: Vec<StatEffector<K>>,
 }
 
 impl<K: Hash+Eq+Clone> From<Vec<StatDefinition<K>>> for StatSet<K> {
@@ -80,7 +80,7 @@ impl StatConditionType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct Effector<K> {
+pub struct StatEffector<K> {
     pub stat_key: K,
     pub active_since: f64,
     pub disable_in: Option<f64>,
@@ -88,11 +88,11 @@ pub struct Effector<K> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct ActiveEffectors<K> {
-    pub effectors: Vec<Effector<K>>,
+pub struct ActiveStatEffectors<K> {
+    pub effectors: Vec<StatEffector<K>>,
 }
 
-impl<K: Hash+Eq> ActiveEffectors<K> {
+impl<K: Hash+Eq> ActiveStatEffectors<K> {
     pub fn update(&mut self, delta_time: f64, stat_set: &mut StatSet<K>) {
         let mut rm_idx = vec![];
         for (idx, stat) in self.effectors.iter_mut().enumerate() {

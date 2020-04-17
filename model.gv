@@ -1,0 +1,17 @@
+digraph Model {
+    edge [minlen = 6];
+    graph [overlap = false];
+
+    stats [shape=box,label="Stats"];
+    inv [shape=box,label="Inventory"];
+    skill [shape=box,label="Skills"];
+    world [shape=box,label="World"];
+
+    stats -> stats [label="temperature > 40 -> health--"];
+    inv -> inv [label="1 log -> 4 planks"];
+    inv -> stats [label="health crystal -> health + 5"];
+    stats -> world [label="furnace -> room temperature + 5"];
+    world -> stats [label="hot room -> player temperature + 2"];
+    skill -> world [label="use skill explode -> boom!"];
+    skill -> stats [label="use skill heal -> health + 10"];
+}
