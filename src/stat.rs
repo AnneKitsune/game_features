@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::marker::PhantomData;
 // Different properties of a player/item/entity
 
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
@@ -30,14 +31,14 @@ pub struct StatInstance<K> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct StatSet<K: Hash+Eq> {
+pub struct StatSet<K: Hash+Eq, E> {
     pub definitions: HashMap<K, StatDefinition<K>>,
     pub stats: HashMap<K, StatInstance<K>>,
-    pub active_effectors: Vec<StatEffector<K>>,
+    pub active_effectors: Vec<StatEffectorInstance<E>>,
 }
 
-impl<K: Hash+Eq+Clone> From<Vec<StatDefinition<K>>> for StatSet<K> {
-    fn from(t: Vec<StatDefinition<K>>) -> StatSet<K> {
+impl<K: Hash+Eq+Clone, E> From<Vec<StatDefinition<K>>> for StatSet<K, E> {
+    fn from(t: Vec<StatDefinition<K>>) -> StatSet<K, E> {
         let instances = t.iter().map(|s| (s.key.clone(), s.default_instance()))
             .collect::<HashMap<_,_>>();
         let defs = t.into_iter().map(|s| (s.key.clone(), s)).collect::<HashMap<_,_>>();
@@ -80,11 +81,12 @@ impl StatConditionType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct StatEffectorDefinition<E> {
+pub struct StatEffectorDefinition<K, E> {
     pub effector_key: E,
     // set to 0 for one shot
     pub duration: Option<f64>,
     // TODO: modifier rules
+    pub effects: Vec<K>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
@@ -95,12 +97,13 @@ pub struct StatEffectorInstance<E> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct StatEffectorsSet<E> {
+pub struct StatEffectorsSet<K, E> {
     pub effectors: Vec<StatEffectorInstance<E>>,
+    _phantom_data: PhantomData<K>,
 }
 
-impl<E: Hash+Eq> StatEffectorsSet<E> {
-    pub fn update(&mut self, delta_time: f64, stat_set: &mut StatSet<E>) {
+impl<K: Hash+Eq, E> StatEffectorsSet<K, E> {
+    pub fn update(&mut self, delta_time: f64, stat_set: &mut StatSet<K, E>) {
         let mut rm_idx = vec![];
         for (idx, stat) in self.effectors.iter_mut().enumerate() {
             // TODO: apply modifier rules and ordering.
