@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::marker::PhantomData;
 // Different properties of a player/item/entity
 
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
