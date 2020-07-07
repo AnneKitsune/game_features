@@ -11,7 +11,7 @@ mod item;
 mod loot_tree;
 mod permissions;
 mod skill;
-pub mod stat;
+mod stat;
 mod statistics;
 mod tier;
 mod unlock;
