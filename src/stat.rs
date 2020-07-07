@@ -51,11 +51,11 @@ impl<K: Hash+Eq+Clone> From<Vec<StatDefinition<K>>> for StatDefinitions<K> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct EffectorDefinitions<K: Hash+Eq, E> {
-    pub defs: HashMap<K, EffectorDefinition<K, E>>,
+pub struct EffectorDefinitions<K, E: Hash+Eq> {
+    pub defs: HashMap<E, EffectorDefinition<K, E>>,
 }
 
-impl<K: Hash+Eq+Clone, E+Clone> From<Vec<EffectorDefinition<K, E>>> for EffectorDefinitions<K, E> {
+impl<K: Hash+Eq+Clone, E: Hash+Eq+Clone> From<Vec<EffectorDefinition<K, E>>> for EffectorDefinitions<K, E> {
     fn from(t: Vec<EffectorDefinition<K, E>>) -> Self {
         let defs = t.into_iter().map(|s| (s.key.clone(), s)).collect::<HashMap<_,_>>();
         Self::new(defs)
@@ -138,6 +138,4 @@ pub struct EffectorInstance<E> {
     pub active_since: f64,
     pub disable_in: Option<f64>,
 }
-
-
 

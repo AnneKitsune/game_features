@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{StatCondition, UseMode};
 
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
 pub struct Unlockable<U, K, S, I> {

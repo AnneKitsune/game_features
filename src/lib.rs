@@ -1,9 +1,7 @@
 #[macro_use]
 extern crate serde;
-
 #[macro_use]
 extern crate derive_new;
-
 #[macro_use]
 extern crate derive_builder;
 
@@ -13,7 +11,7 @@ mod item;
 mod loot_tree;
 mod permissions;
 mod skill;
-mod stat;
+pub mod stat;
 mod statistics;
 mod tier;
 mod unlock;
