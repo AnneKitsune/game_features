@@ -6,15 +6,15 @@ use std::marker::PhantomData;
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
 pub struct StatDefinition<K> {
     key: K,
-    name: String,
-    friendly_name: String,
-    default_value: f64,
+    pub name: String,
+    pub friendly_name: String,
+    pub default_value: f64,
     #[new(default)]
-    min_value: Option<f64>,
+    pub min_value: Option<f64>,
     #[new(default)]
-    max_value: Option<f64>,
+    pub max_value: Option<f64>,
     #[new(default)]
-    icon_path: Option<String>,
+    pub icon_path: Option<String>,
 }
 
 impl<K: Clone> StatDefinition<K> {
@@ -31,24 +31,67 @@ pub struct StatInstance<K> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct StatSet<K: Hash+Eq, E> {
-    pub definitions: HashMap<K, StatDefinition<K>>,
-    pub stats: HashMap<K, StatInstance<K>>,
-    pub active_effectors: Vec<StatEffectorInstance<E>>,
+pub struct StatDefinitions<K: Hash+Eq> {
+    pub defs: HashMap<K, StatDefinition<K>>,
 }
 
-impl<K: Hash+Eq+Clone, E> From<Vec<StatDefinition<K>>> for StatSet<K, E> {
-    fn from(t: Vec<StatDefinition<K>>) -> StatSet<K, E> {
-        let instances = t.iter().map(|s| (s.key.clone(), s.default_instance()))
+impl<K: Hash+Eq+Clone> StatDefinitions<K> {
+    pub fn to_statset(&self) -> StatSet<K> {
+        let instances = self.defs.iter().map(|(k, v)| (k.clone(), v.default_instance()))
             .collect::<HashMap<_,_>>();
-        let defs = t.into_iter().map(|s| (s.key.clone(), s)).collect::<HashMap<_,_>>();
-        StatSet {
-            definitions: defs,
-            stats: instances,
-            active_effectors: vec![],
-        }
+        StatSet::new(instances)
     }
 }
+
+impl<K: Hash+Eq+Clone> From<Vec<StatDefinition<K>>> for StatDefinitions<K> {
+    fn from(t: Vec<StatDefinition<K>>) -> Self {
+        let defs = t.into_iter().map(|s| (s.key.clone(), s)).collect::<HashMap<_,_>>();
+        Self::new(defs)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, new)]
+pub struct EffectorDefinitions<K: Hash+Eq, E> {
+    pub defs: HashMap<K, EffectorDefinition<K, E>>,
+}
+
+impl<K: Hash+Eq+Clone, E+Clone> From<Vec<EffectorDefinition<K, E>>> for EffectorDefinitions<K, E> {
+    fn from(t: Vec<EffectorDefinition<K, E>>) -> Self {
+        let defs = t.into_iter().map(|s| (s.key.clone(), s)).collect::<HashMap<_,_>>();
+        Self::new(defs)
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, new)]
+pub struct StatSet<K: Hash+Eq> {
+    pub stats: HashMap<K, StatInstance<K>>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, new)]
+pub struct EffectorSet<E> {
+    pub effectors: Vec<EffectorInstance<E>>,
+}
+
+//impl<K: Hash+Eq> StatSet<K> {
+//    pub fn update(&mut self, delta_time: f64, stat_set: &mut StatSet<K>) {
+//        let mut rm_idx = vec![];
+//        for (idx, stat) in self.effectors.iter_mut().enumerate() {
+//            // TODO: apply modifier rules and ordering.
+//            
+//            if let Some(left) = stat.disable_in.as_mut() {
+//                *left -= delta_time;
+//                if *left <= 0.0 {
+//                    rm_idx.push(idx);
+//                }
+//            }
+//        }
+//        
+//        rm_idx.reverse();
+//        for idx in rm_idx {
+//            self.effectors.swap_remove(idx);
+//        }
+//    }
+//}
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct StatCondition<K> {
@@ -81,8 +124,8 @@ impl StatConditionType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct StatEffectorDefinition<K, E> {
-    pub effector_key: E,
+pub struct EffectorDefinition<K, E> {
+    pub key: E,
     // set to 0 for one shot
     pub duration: Option<f64>,
     // TODO: modifier rules
@@ -90,36 +133,11 @@ pub struct StatEffectorDefinition<K, E> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct StatEffectorInstance<E> {
+pub struct EffectorInstance<E> {
     pub effector_key: E,
     pub active_since: f64,
     pub disable_in: Option<f64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct StatEffectorsSet<K, E> {
-    pub effectors: Vec<StatEffectorInstance<E>>,
-    _phantom_data: PhantomData<K>,
-}
 
-impl<K: Hash+Eq, E> StatEffectorsSet<K, E> {
-    pub fn update(&mut self, delta_time: f64, stat_set: &mut StatSet<K, E>) {
-        let mut rm_idx = vec![];
-        for (idx, stat) in self.effectors.iter_mut().enumerate() {
-            // TODO: apply modifier rules and ordering.
-            
-            if let Some(left) = stat.disable_in.as_mut() {
-                *left -= delta_time;
-                if *left <= 0.0 {
-                    rm_idx.push(idx);
-                }
-            }
-        }
-        
-        rm_idx.reverse();
-        for idx in rm_idx {
-            self.effectors.swap_remove(idx);
-        }
-    }
-}
 

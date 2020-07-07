@@ -20,7 +20,7 @@ ron = "0.2"
 dirty = "0.2"
 rand = "0.5.5"
 lazy_static = "1.1.0"
-derive-new = "0.5"
+derive-new = "0.5.8"
 derive_builder = "0.7.1"
 roman = "0.1.6"
 
