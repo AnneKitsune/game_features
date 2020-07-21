@@ -1,6 +1,6 @@
 [package]
 name = "game_features"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["jojolepro <jojolepromain@gmail.com>"]
 description = "Various helpful constructs for game developement. See the github repository for detailled instructions."
 categories = ["game-engines"]
