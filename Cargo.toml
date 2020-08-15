@@ -23,6 +23,7 @@ lazy_static = "1.1.0"
 derive-new = "0.5.8"
 derive_builder = "0.7.1"
 roman = "0.1.6"
+derivative = "2.1.1"
 
 #hyper = "0.12.11"
 #hyper-tls = "0.3.1"

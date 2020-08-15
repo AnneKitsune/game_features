@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
+use derivative::*;
 // Different properties of a player/item/entity
 
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
@@ -92,13 +93,15 @@ pub struct EffectorSet<E> {
 //    }
 //}
 
-#[derive(Debug, Clone, Serialize, Deserialize, new)]
+#[derive(Clone, Debug, Serialize, Deserialize, new)]
 pub struct StatCondition<K> {
     pub stat_key: K,
     pub condition: StatConditionType,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, new)]
+#[derive(Clone, Serialize, Deserialize, new, Derivative)]
+#[derivative(Debug)]
+//#[derivative(Debug)]
 pub enum StatConditionType {
     MinValue(f64),
     BetweenValue(f64, f64),
@@ -106,18 +109,24 @@ pub enum StatConditionType {
     MinPercent(f64),
     BetweenPercent(f64, f64),
     MaxPercent(f64),
+    #[serde(skip)]
+    Custom(
+        #[derivative(Debug="ignore")]
+        std::sync::Arc<Box<dyn Fn(f64) -> bool>>
+    ),
 }
 
 impl StatConditionType {
     pub fn is_true(&self, value: f64, min_value: f64, max_value: f64) -> bool {
         let percent = (value - min_value) / (max_value - min_value);
-        match *self {
-            StatConditionType::MinValue(v) => value >= v,
-            StatConditionType::BetweenValue(min, max) => value >= min && value <= max,
-            StatConditionType::MaxValue(v) => value <= v,
-            StatConditionType::MinPercent(p) => percent >= p,
-            StatConditionType::BetweenPercent(min, max) => percent >= min && percent <= max,
-            StatConditionType::MaxPercent(p) => percent <= p,
+        match &*self {
+            StatConditionType::MinValue(v) => value >= *v,
+            StatConditionType::BetweenValue(min, max) => value >= *min && value <= *max,
+            StatConditionType::MaxValue(v) => value <= *v,
+            StatConditionType::MinPercent(p) => percent >= *p,
+            StatConditionType::BetweenPercent(min, max) => percent >= *min && percent <= *max,
+            StatConditionType::MaxPercent(p) => percent <= *p,
+            StatConditionType::Custom(e) => e(value),
         }
     }
 }

@@ -4,6 +4,8 @@ extern crate serde;
 extern crate derive_new;
 #[macro_use]
 extern crate derive_builder;
+#[macro_use]
+extern crate derivative;
 
 mod chat;
 mod faction;
