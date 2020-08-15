@@ -65,4 +65,3 @@ impl<U, K, S, I> Unlockable<U, K, S, I> {
         self.is_unlocked
     }
 }
-

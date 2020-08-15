@@ -20,8 +20,8 @@ pub struct ItemTransitionDefinition<K, I, E, S, U: Default> {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum UseMode {
     Consume,
-    UseOnce{durability: f64},
-    UsePerSecond{rate: f64},
+    UseOnce { durability: f64 },
+    UsePerSecond { rate: f64 },
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -37,4 +37,3 @@ pub struct ItemTransitionBatch<K> {
     remaining: u32,
     next_completion_remaining: f64,
 }
-

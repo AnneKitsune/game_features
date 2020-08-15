@@ -249,7 +249,11 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
         to_idx: usize,
         with_overflow: bool,
     ) -> Result<(), ItemError<K, U>> {
-        if let Some(Some(qty)) = self.content.get(from_idx).map(|i| i.as_ref().map(|i2| i2.quantity)) {
+        if let Some(Some(qty)) = self
+            .content
+            .get(from_idx)
+            .map(|i| i.as_ref().map(|i2| i2.quantity))
+        {
             self.transfer(from_idx, target, to_idx, qty, with_overflow)
         } else {
             Err(ItemError::SlotEmpty)
@@ -288,7 +292,11 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
         to_idx: usize,
         with_overflow: bool,
     ) -> Result<(), ItemError<K, U>> {
-        if let Some(Some(qty)) = self.content.get(from_idx).map(|i| i.as_ref().map(|i2| i2.quantity)) {
+        if let Some(Some(qty)) = self
+            .content
+            .get(from_idx)
+            .map(|i| i.as_ref().map(|i2| i2.quantity))
+        {
             self.move_item(from_idx, to_idx, qty, with_overflow)
         } else {
             Err(ItemError::SlotEmpty)
@@ -353,7 +361,11 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
     /// Errors:
     /// See `Transform::delete`.
     pub fn delete_stack(&mut self, idx: usize) -> Result<ItemInstance<K, U>, ItemError<K, U>> {
-        if let Some(Some(qty)) = self.content.get(idx).map(|i| i.as_ref().map(|i2| i2.quantity)) {
+        if let Some(Some(qty)) = self
+            .content
+            .get(idx)
+            .map(|i| i.as_ref().map(|i2| i2.quantity))
+        {
             self.delete(idx, qty)
         } else {
             Err(ItemError::SlotEmpty)
@@ -675,8 +687,10 @@ mod test {
             .user_data(CustomItemInstanceData::new(0.0))
             .build()
             .unwrap();
-        let mut inv = Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
-        let mut inv2 = Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
+        let mut inv =
+            Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
+        let mut inv2 =
+            Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
         inv.insert(ii.clone()).expect("");
         inv2.insert(ii).expect("");
         inv.transfer(0, &mut inv2, 1, 2, false).expect("");

@@ -26,14 +26,18 @@ pub struct SkillInstance<K> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct SkillDefinitions<K: Hash+Eq, E, S, I, GE> {
+pub struct SkillDefinitions<K: Hash + Eq, E, S, I, GE> {
     pub defs: HashMap<K, SkillDefinition<K, E, S, I, GE>>,
 }
 
-impl<K: Hash+Eq+Clone, E, S, I, GE> From<Vec<SkillDefinition<K, E, S, I, GE>>> for SkillDefinitions<K, E, S, I, GE> {
+impl<K: Hash + Eq + Clone, E, S, I, GE> From<Vec<SkillDefinition<K, E, S, I, GE>>>
+    for SkillDefinitions<K, E, S, I, GE>
+{
     fn from(t: Vec<SkillDefinition<K, E, S, I, GE>>) -> Self {
-        let defs = t.into_iter().map(|s| (s.key.clone(), s)).collect::<HashMap<_,_>>();
+        let defs = t
+            .into_iter()
+            .map(|s| (s.key.clone(), s))
+            .collect::<HashMap<_, _>>();
         Self::new(defs)
     }
 }
-

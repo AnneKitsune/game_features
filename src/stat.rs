@@ -1,6 +1,6 @@
+use derivative::*;
 use std::collections::HashMap;
 use std::hash::Hash;
-use derivative::*;
 // Different properties of a player/item/entity
 
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
@@ -31,39 +31,50 @@ pub struct StatInstance<K> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct StatDefinitions<K: Hash+Eq> {
+pub struct StatDefinitions<K: Hash + Eq> {
     pub defs: HashMap<K, StatDefinition<K>>,
 }
 
-impl<K: Hash+Eq+Clone> StatDefinitions<K> {
+impl<K: Hash + Eq + Clone> StatDefinitions<K> {
     pub fn to_statset(&self) -> StatSet<K> {
-        let instances = self.defs.iter().map(|(k, v)| (k.clone(), v.default_instance()))
-            .collect::<HashMap<_,_>>();
+        let instances = self
+            .defs
+            .iter()
+            .map(|(k, v)| (k.clone(), v.default_instance()))
+            .collect::<HashMap<_, _>>();
         StatSet::new(instances)
     }
 }
 
-impl<K: Hash+Eq+Clone> From<Vec<StatDefinition<K>>> for StatDefinitions<K> {
+impl<K: Hash + Eq + Clone> From<Vec<StatDefinition<K>>> for StatDefinitions<K> {
     fn from(t: Vec<StatDefinition<K>>) -> Self {
-        let defs = t.into_iter().map(|s| (s.key.clone(), s)).collect::<HashMap<_,_>>();
+        let defs = t
+            .into_iter()
+            .map(|s| (s.key.clone(), s))
+            .collect::<HashMap<_, _>>();
         Self::new(defs)
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct EffectorDefinitions<K, E: Hash+Eq> {
+pub struct EffectorDefinitions<K, E: Hash + Eq> {
     pub defs: HashMap<E, EffectorDefinition<K, E>>,
 }
 
-impl<K: Hash+Eq+Clone, E: Hash+Eq+Clone> From<Vec<EffectorDefinition<K, E>>> for EffectorDefinitions<K, E> {
+impl<K: Hash + Eq + Clone, E: Hash + Eq + Clone> From<Vec<EffectorDefinition<K, E>>>
+    for EffectorDefinitions<K, E>
+{
     fn from(t: Vec<EffectorDefinition<K, E>>) -> Self {
-        let defs = t.into_iter().map(|s| (s.key.clone(), s)).collect::<HashMap<_,_>>();
+        let defs = t
+            .into_iter()
+            .map(|s| (s.key.clone(), s))
+            .collect::<HashMap<_, _>>();
         Self::new(defs)
     }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, new)]
-pub struct StatSet<K: Hash+Eq> {
+pub struct StatSet<K: Hash + Eq> {
     pub stats: HashMap<K, StatInstance<K>>,
 }
 
@@ -77,7 +88,7 @@ pub struct EffectorSet<E> {
 //        let mut rm_idx = vec![];
 //        for (idx, stat) in self.effectors.iter_mut().enumerate() {
 //            // TODO: apply modifier rules and ordering.
-//            
+//
 //            if let Some(left) = stat.disable_in.as_mut() {
 //                *left -= delta_time;
 //                if *left <= 0.0 {
@@ -85,7 +96,7 @@ pub struct EffectorSet<E> {
 //                }
 //            }
 //        }
-//        
+//
 //        rm_idx.reverse();
 //        for idx in rm_idx {
 //            self.effectors.swap_remove(idx);
@@ -110,10 +121,7 @@ pub enum StatConditionType {
     BetweenPercent(f64, f64),
     MaxPercent(f64),
     #[serde(skip)]
-    Custom(
-        #[derivative(Debug="ignore")]
-        std::sync::Arc<Box<dyn Fn(f64) -> bool>>
-    ),
+    Custom(#[derivative(Debug = "ignore")] std::sync::Arc<Box<dyn Fn(f64) -> bool>>),
 }
 
 impl StatConditionType {
@@ -146,4 +154,3 @@ pub struct EffectorInstance<E> {
     pub active_since: f64,
     pub disable_in: Option<f64>,
 }
-
