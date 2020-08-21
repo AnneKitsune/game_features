@@ -1,6 +1,7 @@
 use derivative::*;
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::fmt::Debug;
 // Different properties of a player/item/entity
 
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
@@ -28,6 +29,8 @@ impl<K: Clone> StatDefinition<K> {
 pub struct StatInstance<K> {
     pub key: K,
     pub value: f64,
+    #[new(default)]
+    pub value_with_effectors: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
@@ -110,9 +113,16 @@ pub struct StatCondition<K> {
     pub condition: StatConditionType,
 }
 
+impl<K: Hash + Eq + Debug> StatCondition<K> {
+    pub fn check(&self, stats: &StatSet<K>, stat_defs: &StatDefinitions<K>) -> bool {
+        let v = stats.stats.get(&self.stat_key).expect(&format!("Requested stat key {:?} is not in provided StatSet.", self.stat_key));
+        let def = stat_defs.defs.get(&self.stat_key).expect(&format!("Requested stat key {:?} is not in provided StatDefinitions.", self.stat_key));
+        self.condition.is_true(v.value, def.min_value, def.max_value)
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize, new, Derivative)]
 #[derivative(Debug)]
-//#[derivative(Debug)]
 pub enum StatConditionType {
     MinValue(f64),
     BetweenValue(f64, f64),
@@ -125,15 +135,19 @@ pub enum StatConditionType {
 }
 
 impl StatConditionType {
-    pub fn is_true(&self, value: f64, min_value: f64, max_value: f64) -> bool {
-        let percent = (value - min_value) / (max_value - min_value);
+    pub fn is_true(&self, value: f64, min_value: Option<f64>, max_value: Option<f64>) -> bool {
+        let percent = if let (Some(min_value), Some(max_value)) = (min_value, max_value) {
+            Some((value - min_value) / (max_value - min_value))
+        } else {
+            None
+        };
         match &*self {
             StatConditionType::MinValue(v) => value >= *v,
             StatConditionType::BetweenValue(min, max) => value >= *min && value <= *max,
             StatConditionType::MaxValue(v) => value <= *v,
-            StatConditionType::MinPercent(p) => percent >= *p,
-            StatConditionType::BetweenPercent(min, max) => percent >= *min && percent <= *max,
-            StatConditionType::MaxPercent(p) => percent <= *p,
+            StatConditionType::MinPercent(p) => percent.expect("This stat doesn't have min/max values.") >= *p,
+            StatConditionType::BetweenPercent(min, max) => percent.expect("This stat doesn't have min/max values.") >= *min && percent.expect("This stat doesn't have min/max values.") <= *max,
+            StatConditionType::MaxPercent(p) => percent.expect("This stat doesn't have min/max values.") <= *p,
             StatConditionType::Custom(e) => e(value),
         }
     }
@@ -144,13 +158,19 @@ pub struct EffectorDefinition<K, E> {
     pub key: E,
     // set to 0 for one shot
     pub duration: Option<f64>,
-    // TODO: modifier rules
-    pub effects: Vec<K>,
+    pub effects: Vec<(K, EffectorType)>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, new)]
+pub enum EffectorType {
+    Additive(f64),
+    AdditiveMultiplier(f64),
+    MultiplicativeMultiplier(f64),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct EffectorInstance<E> {
     pub effector_key: E,
-    pub active_since: f64,
     pub disable_in: Option<f64>,
 }
+

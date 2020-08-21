@@ -1,6 +1,7 @@
 use crate::*;
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::fmt::Debug;
 
 // World interaction
 // or
@@ -20,9 +21,27 @@ pub struct SkillDefinition<K, E, S, I, GE> {
     pub event_on_trigger: Vec<GE>,
 }
 
+impl<K, E, S: Hash + Eq + Debug, I, GE> SkillDefinition<K, E, S, I, GE> {
+    // TODO: implement inventory conditions
+    pub fn check_conditions(&self, stats: &StatSet<S>, stat_defs: &StatDefinitions<S>) -> bool {
+        for c in &self.conditions {
+            if !c.check(stats, stat_defs) {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct SkillInstance<K> {
     pub skill_key: K,
     pub current_cooldown: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, new)]
+pub struct SkillSet<K: Hash + Eq> {
+    pub skills: HashMap<K, SkillInstance<K>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
@@ -41,3 +60,4 @@ impl<K: Hash + Eq + Clone, E, S, I, GE> From<Vec<SkillDefinition<K, E, S, I, GE>
         Self::new(defs)
     }
 }
+
