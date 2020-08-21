@@ -1,7 +1,7 @@
 use crate::*;
 use std::collections::HashMap;
-use std::hash::Hash;
 use std::fmt::Debug;
+use std::hash::Hash;
 
 // World interaction
 // or
@@ -60,4 +60,3 @@ impl<K: Hash + Eq + Clone, E, S, I, GE> From<Vec<SkillDefinition<K, E, S, I, GE>
         Self::new(defs)
     }
 }
-

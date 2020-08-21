@@ -1,7 +1,7 @@
 use derivative::*;
 use std::collections::HashMap;
-use std::hash::Hash;
 use std::fmt::Debug;
+use std::hash::Hash;
 // Different properties of a player/item/entity
 
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
@@ -115,9 +115,16 @@ pub struct StatCondition<K> {
 
 impl<K: Hash + Eq + Debug> StatCondition<K> {
     pub fn check(&self, stats: &StatSet<K>, stat_defs: &StatDefinitions<K>) -> bool {
-        let v = stats.stats.get(&self.stat_key).expect(&format!("Requested stat key {:?} is not in provided StatSet.", self.stat_key));
-        let def = stat_defs.defs.get(&self.stat_key).expect(&format!("Requested stat key {:?} is not in provided StatDefinitions.", self.stat_key));
-        self.condition.is_true(v.value, def.min_value, def.max_value)
+        let v = stats.stats.get(&self.stat_key).expect(&format!(
+            "Requested stat key {:?} is not in provided StatSet.",
+            self.stat_key
+        ));
+        let def = stat_defs.defs.get(&self.stat_key).expect(&format!(
+            "Requested stat key {:?} is not in provided StatDefinitions.",
+            self.stat_key
+        ));
+        self.condition
+            .is_true(v.value, def.min_value, def.max_value)
     }
 }
 
@@ -145,9 +152,16 @@ impl StatConditionType {
             StatConditionType::MinValue(v) => value >= *v,
             StatConditionType::BetweenValue(min, max) => value >= *min && value <= *max,
             StatConditionType::MaxValue(v) => value <= *v,
-            StatConditionType::MinPercent(p) => percent.expect("This stat doesn't have min/max values.") >= *p,
-            StatConditionType::BetweenPercent(min, max) => percent.expect("This stat doesn't have min/max values.") >= *min && percent.expect("This stat doesn't have min/max values.") <= *max,
-            StatConditionType::MaxPercent(p) => percent.expect("This stat doesn't have min/max values.") <= *p,
+            StatConditionType::MinPercent(p) => {
+                percent.expect("This stat doesn't have min/max values.") >= *p
+            }
+            StatConditionType::BetweenPercent(min, max) => {
+                percent.expect("This stat doesn't have min/max values.") >= *min
+                    && percent.expect("This stat doesn't have min/max values.") <= *max
+            }
+            StatConditionType::MaxPercent(p) => {
+                percent.expect("This stat doesn't have min/max values.") <= *p
+            }
             StatConditionType::Custom(e) => e(value),
         }
     }
@@ -173,4 +187,3 @@ pub struct EffectorInstance<E> {
     pub effector_key: E,
     pub disable_in: Option<f64>,
 }
-
