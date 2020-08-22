@@ -81,9 +81,17 @@ pub struct StatSet<K: Hash + Eq> {
     pub stats: HashMap<K, StatInstance<K>>,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, new)]
+#[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct EffectorSet<E> {
     pub effectors: Vec<EffectorInstance<E>>,
+}
+
+impl<E> Default for EffectorSet<E> {
+    fn default() -> Self {
+        Self {
+            effectors: vec![],
+        }
+    }
 }
 
 //impl<K: Hash+Eq> StatSet<K> {
@@ -138,7 +146,8 @@ pub enum StatConditionType {
     BetweenPercent(f64, f64),
     MaxPercent(f64),
     #[serde(skip)]
-    Custom(#[derivative(Debug = "ignore")] std::sync::Arc<Box<dyn Fn(f64) -> bool>>),
+    //Custom(#[derivative(Debug = "ignore")] std::sync::Arc<Box<dyn Fn(f64) -> bool>>),
+    Custom(#[derivative(Debug = "ignore")] fn(f64) -> bool),
 }
 
 impl StatConditionType {
@@ -162,7 +171,9 @@ impl StatConditionType {
             StatConditionType::MaxPercent(p) => {
                 percent.expect("This stat doesn't have min/max values.") <= *p
             }
-            StatConditionType::Custom(e) => e(value),
+            StatConditionType::Custom(e) => {
+                e(value)
+            },
         }
     }
 }
