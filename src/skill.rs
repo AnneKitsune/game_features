@@ -20,11 +20,23 @@ pub struct SkillDefinition<K, E, S, I> {
     pub stat_effectors: Vec<E>,
 }
 
-impl<K: Hash + Eq + Debug, E, S, I> SkillDefinition<K, E, S, I> {
+/// # Generics
+/// K: Stat Key
+/// E: Effector Key
+/// S: Skill Key
+/// I: Item Key
+/// IT: Item Type
+/// CD: Item Custom Data
+impl<K: Hash + Eq + Debug, E, S, I: Clone + PartialEq + Debug> SkillDefinition<K, E, S, I> {
     // TODO: implement inventory conditions
-    pub fn check_conditions(&self, stats: &StatSet<K>, stat_defs: &StatDefinitions<K>) -> bool {
+    pub fn check_conditions<IT: SlotType, CD: Default + Clone + Debug>(&self, stats: &StatSet<K>, inventory: &Inventory<I, IT, CD>, stat_defs: &StatDefinitions<K>) -> bool {
         for c in &self.conditions {
             if !c.check(stats, stat_defs) {
+                return false;
+            }
+        }
+        for ic in &self.item_conditions {
+            if !inventory.has_quantity(&ic.0, ic.1) {
                 return false;
             }
         }

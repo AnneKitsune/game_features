@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::marker::PhantomData;
+use std::hash::Hash;
 
 /// An `ItemDefinition` stores the different properties of a type of item.
 /// It is a schema that contains the data which isn't changing between different item instances.
@@ -13,11 +13,11 @@ use std::marker::PhantomData;
 /// * D: The type of the custom user data. If you don't have any, use the `()` type. It can (and
 /// probably should) be different than the custom user data used on `ItemInstance`s
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
-pub struct ItemDefinition<K, T, D: Default> {
+pub struct ItemDefinition<K, S, D: Default> {
     /// The key identifying this item definition.
     pub key: K,
     /// The type / item group that this item definition is part of.
-    pub item_type: T,
+    pub slot_type: S,
     /// The display name of this item definition.
     pub name: String,
     /// The friendly name of this item definition. Mostly used to find items by name instead of by
@@ -69,15 +69,28 @@ pub struct ItemInstance<K, U: Default> {
 }
 
 /// A simple repository mapping the key K to the corresponding `ItemDefinition`.
-pub type ItemDefinitionRepository<K, T, D> = HashMap<K, ItemDefinition<K, T, D>>;
-
-/// A trait defining which items can be inserted into each inventory slot type.
-pub trait SlotType<T> {
-    fn can_insert_into(&self, item_type: &T) -> bool;
+#[derive(new)]
+pub struct ItemDefinitions<K, S, D: Default> {
+    pub defs: HashMap<K, ItemDefinition<K, S, D>>,
 }
 
-impl<T> SlotType<T> for () {
-    fn can_insert_into(&self, _: &T) -> bool {
+impl<K: Hash+Eq+Clone, S, D: Default> From<Vec<ItemDefinition<K, S, D>>> for ItemDefinitions<K, S, D> {
+    fn from(t: Vec<ItemDefinition<K, S, D>>) -> Self {
+        let defs = t
+            .into_iter()
+            .map(|s| (s.key.clone(), s))
+            .collect::<HashMap<_, _>>();
+        Self::new(defs)
+    }
+}
+
+/// A trait defining which items can be inserted into each inventory slot type.
+pub trait SlotType {
+    fn can_insert_into(&self, item_type: &Self) -> bool;
+}
+
+impl SlotType for () {
+    fn can_insert_into(&self, _: &Self) -> bool {
         true
     }
 }
@@ -109,8 +122,11 @@ pub enum MoveToFrontMode {
 // TODO Complete slot restriction integration
 // TODO Respect maximum stack size
 
+/// # Generics
+/// K: Item Type
+/// T: Slot
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
-pub struct Inventory<K, T, S: SlotType<T>, U: Default> {
+pub struct Inventory<K, S: SlotType, U: Default> {
     /// The contents of the `Inventory`.
     /// None values indicate empty but existing inventory slots.
     pub content: Vec<Option<ItemInstance<K, U>>>,
@@ -125,16 +141,13 @@ pub struct Inventory<K, T, S: SlotType<T>, U: Default> {
     pub move_to_front: MoveToFrontMode,
     /// Configures if the inventory resizes when item are inserted/removed or not.
     pub sizing_mode: InventorySizingMode,
-    #[new(default)]
-    #[builder(default)]
-    _phantom: PhantomData<T>,
 }
 
-impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug>
-    Inventory<K, T, S, U>
+impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug>
+    Inventory<K, S, U>
 {
     /// Creates a new `Inventory` with a fixed slot count.
-    pub fn new_fixed(count: usize) -> Inventory<K, T, S, U> {
+    pub fn new_fixed(count: usize) -> Inventory<K, S, U> {
         let mut content = Vec::with_capacity(count);
         (0..count).for_each(|_| content.push(None));
         let mut slot_restriction = Vec::with_capacity(count);
@@ -144,13 +157,12 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
             slot_restriction,
             move_to_front: MoveToFrontMode::None,
             sizing_mode: InventorySizingMode::new_fixed(count),
-            _phantom: PhantomData,
         }
     }
 
     /// Creates a new dynamically sized `Inventory`. A minimum of `minimum` slots are garanteed to
     /// be present at all time. The quantity of slots will not go over `maximum`.
-    pub fn new_dynamic(minimum: usize, maximum: usize) -> Inventory<K, T, S, U> {
+    pub fn new_dynamic(minimum: usize, maximum: usize) -> Inventory<K, S, U> {
         let mut content = Vec::with_capacity(minimum);
         (0..minimum).for_each(|_| content.push(None));
         Inventory {
@@ -158,7 +170,6 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
             slot_restriction: vec![],
             move_to_front: MoveToFrontMode::None,
             sizing_mode: InventorySizingMode::new_dynamic(minimum, maximum),
-            _phantom: PhantomData,
         }
     }
 
@@ -223,7 +234,7 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
     pub fn transfer(
         &mut self,
         from_idx: usize,
-        target: &mut Inventory<K, T, S, U>,
+        target: &mut Inventory<K, S, U>,
         to_idx: usize,
         quantity: usize,
         with_overflow: bool,
@@ -245,7 +256,7 @@ impl<K: PartialEq + Clone + Debug, T, S: SlotType<T>, U: Default + Clone + Debug
     pub fn transfer_stack(
         &mut self,
         from_idx: usize,
-        target: &mut Inventory<K, T, S, U>,
+        target: &mut Inventory<K, S, U>,
         to_idx: usize,
         with_overflow: bool,
     ) -> Result<(), ItemError<K, U>> {
@@ -597,7 +608,7 @@ pub enum ItemError<K: PartialEq + Debug, U: Default> {
 }
 
 impl<K: PartialEq> SingleEquippedItem<K> {
-    pub fn get_equipped(&self, inventory: &Inventory<K, T, D, S>) -> Option<&ItemInstance<K, U>> {
+    pub fn get_equipped(&self, inventory: &Inventory<K, D, S>) -> Option<&ItemInstance<K, U>> {
 
     }
 }
@@ -626,17 +637,18 @@ mod test {
     }
 
     #[derive(new, Debug, Clone, Serialize, Deserialize, PartialEq)]
-    enum CustomSlotType {
-        Regular,
-        Equipment,
+    enum ItemType {
     }
 
     #[derive(new, Debug, Clone, Serialize, Deserialize, PartialEq)]
     enum ItemType {
-        Other,
         Weapon,
         Armor,
+        Other,
         Consumable,
+        // slot types
+        Regular,
+        Equipment,
     }
 
     // Work around for broken derive_builder.
@@ -646,11 +658,12 @@ mod test {
         }
     }
 
-    impl SlotType<ItemType> for CustomSlotType {
+    impl SlotType for ItemType {
+        // slot type -> item type
         fn can_insert_into(&self, other: &ItemType) -> bool {
             match *self {
-                CustomSlotType::Regular => true,
-                CustomSlotType::Equipment => {
+                ItemType::Regular => true,
+                ItemType::Equipment => {
                     *other == ItemType::Weapon || *other == ItemType::Armor
                 }
             }
@@ -688,9 +701,9 @@ mod test {
             .build()
             .unwrap();
         let mut inv =
-            Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
+            Inventory::<u32, ItemType, CustomItemInstanceData>::new_fixed(8);
         let mut inv2 =
-            Inventory::<u32, ItemType, CustomSlotType, CustomItemInstanceData>::new_fixed(8);
+            Inventory::<u32, ItemType, CustomItemInstanceData>::new_fixed(8);
         inv.insert(ii.clone()).expect("");
         inv2.insert(ii).expect("");
         inv.transfer(0, &mut inv2, 1, 2, false).expect("");
