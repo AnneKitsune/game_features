@@ -1,8 +1,8 @@
 [package]
 name = "game_features"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["jojolepro <jojolepromain@gmail.com>"]
-description = "Various helpful constructs for game developement. See the github repository for detailled instructions."
+description = "Various helpful constructs for game development. See the github repository for detailed instructions."
 categories = ["game-engines"]
 keywords = ["game", "features", "utils"]
 documentation = "https://docs.rs/game_features"
@@ -24,10 +24,4 @@ derive-new = "0.5.8"
 derive_builder = "0.7.1"
 roman = "0.1.6"
 derivative = "2.1.1"
-
-#hyper = "0.12.11"
-#hyper-tls = "0.3.1"
-
-#tokio = "0.1.7"
-#tokio-executor = "0.1.0"
 
