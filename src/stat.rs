@@ -145,6 +145,7 @@ pub enum StatConditionType {
     MinPercent(f64),
     BetweenPercent(f64, f64),
     MaxPercent(f64),
+    DivisibleBy(i32),
     #[serde(skip)]
     //Custom(#[derivative(Debug = "ignore")] std::sync::Arc<Box<dyn Fn(f64) -> bool>>),
     Custom(#[derivative(Debug = "ignore")] fn(f64) -> bool),
@@ -170,6 +171,9 @@ impl StatConditionType {
             }
             StatConditionType::MaxPercent(p) => {
                 percent.expect("This stat doesn't have min/max values.") <= *p
+            }
+            StatConditionType::DivisibleBy(p) => {
+                value as i32 % p == 0
             }
             StatConditionType::Custom(e) => {
                 e(value)
