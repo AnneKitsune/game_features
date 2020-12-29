@@ -55,7 +55,7 @@ pub struct SkillSet<S: Hash + Eq> {
     pub skills: HashMap<S, SkillInstance<S>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, new)]
+#[derive(Debug, Clone, Serialize, Deserialize, new, Default)]
 pub struct SkillDefinitions<K, E, S: Hash + Eq, I> {
     pub defs: HashMap<S, SkillDefinition<K, E, S, I>>,
 }

@@ -33,7 +33,7 @@ pub struct StatInstance<K> {
     pub value_with_effectors: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, new)]
+#[derive(Debug, Clone, Serialize, Deserialize, new, Default)]
 pub struct StatDefinitions<K: Hash + Eq> {
     pub defs: HashMap<K, StatDefinition<K>>,
 }
@@ -59,7 +59,7 @@ impl<K: Hash + Eq + Clone> From<Vec<StatDefinition<K>>> for StatDefinitions<K> {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, new)]
+#[derive(Debug, Clone, Serialize, Deserialize, new, Default)]
 pub struct EffectorDefinitions<K, E: Hash + Eq> {
     pub defs: HashMap<E, EffectorDefinition<K, E>>,
 }
