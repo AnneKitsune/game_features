@@ -55,9 +55,17 @@ pub struct SkillSet<S: Hash + Eq> {
     pub skills: HashMap<S, SkillInstance<S>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, new, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct SkillDefinitions<K, E, S: Hash + Eq, I> {
     pub defs: HashMap<S, SkillDefinition<K, E, S, I>>,
+}
+
+impl<K, E, S: Hash+Eq, I> Default for SkillDefinitions<K, E, S, I> {
+    fn default() -> Self {
+        Self {
+            defs: HashMap::default(),
+        }
+    }
 }
 
 impl<K, E, S: Hash + Eq + Clone, I> From<Vec<SkillDefinition<K, E, S, I>>>

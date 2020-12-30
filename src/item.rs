@@ -69,9 +69,17 @@ pub struct ItemInstance<K, U: Default> {
 }
 
 /// A simple repository mapping the key K to the corresponding `ItemDefinition`.
-#[derive(Serialize, Deserialize, Clone, new, Default)]
+#[derive(Serialize, Deserialize, Clone, new)]
 pub struct ItemDefinitions<K: Hash+Eq, S, D: Default> {
     pub defs: HashMap<K, ItemDefinition<K, S, D>>,
+}
+
+impl<K: Hash+Eq, S, D: Default> Default for ItemDefinitions<K, S, D> {
+    fn default() -> Self {
+        Self {
+            defs: HashMap::default(),
+        }
+    }
 }
 
 impl<K: Hash+Eq+Clone, S, D: Default> From<Vec<ItemDefinition<K, S, D>>> for ItemDefinitions<K, S, D> {
