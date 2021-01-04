@@ -29,7 +29,7 @@ impl<K: Clone> StatDefinition<K> {
 pub struct StatInstance<K> {
     pub key: K,
     pub value: f64,
-    #[new(default)]
+    #[new(value="value")]
     pub value_with_effectors: f64,
 }
 
