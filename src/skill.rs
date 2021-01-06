@@ -55,6 +55,18 @@ pub struct SkillSet<S: Hash + Eq> {
     pub skills: HashMap<S, SkillInstance<S>>,
 }
 
+impl<S: Hash + Eq + Clone> From<Vec<S>> for SkillSet<S> {
+    fn from(t: Vec<S>) -> Self {
+        let mut h = HashMap::new();
+        for s in t {
+            h.insert(s.clone(), SkillInstance::new(s, 0.0));
+        }
+        Self {
+            skills: h,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct SkillDefinitions<K, E, S: Hash + Eq, I> {
     pub defs: HashMap<S, SkillDefinition<K, E, S, I>>,
