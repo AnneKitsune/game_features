@@ -1,22 +1,29 @@
 use partial_function::LowerPartialFunction;
 use rand::{thread_rng, Rng};
 
+/// A weighted node of a loot tree with the corresponding result.
 #[derive(Deserialize)]
 pub struct LootTreeNode<R> {
+    /// The weight of this node.
     pub chances: i32,
+    /// The result of this node.
     pub result: R,
 }
 
+/// A builder for the `LootTree`.
 #[derive(Deserialize)]
 pub struct LootTreeBuilder<R> {
+    /// The nodes contained in this builder.
     pub nodes: Vec<LootTreeNode<R>>,
 }
 
 impl<R: Clone + 'static> LootTreeBuilder<R> {
+    /// Creates a new builder.
     pub fn new() -> Self {
         LootTreeBuilder { nodes: vec![] }
     }
 
+    /// Builds the loot tree.
     pub fn build(self) -> LootTree<R> {
         let mut f = LowerPartialFunction::new();
         let mut accum = 0;
@@ -53,6 +60,7 @@ pub struct LootTree<R> {
 }
 
 impl<R> LootTree<R> {
+    /// Returns a random item from the loot tree.
     pub fn roll(&self) -> Option<R> {
         let rng = thread_rng().gen_range(0, self.max);
         self.partial_func.eval(rng)

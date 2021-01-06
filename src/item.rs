@@ -71,6 +71,7 @@ pub struct ItemInstance<K, U: Default> {
 /// A simple repository mapping the key K to the corresponding `ItemDefinition`.
 #[derive(Serialize, Deserialize, Clone, new)]
 pub struct ItemDefinitions<K: Hash+Eq, S, D: Default> {
+    /// The definitions.
     pub defs: HashMap<K, ItemDefinition<K, S, D>>,
 }
 
@@ -94,6 +95,7 @@ impl<K: Hash+Eq+Clone, S, D: Default> From<Vec<ItemDefinition<K, S, D>>> for Ite
 
 /// A trait defining which items can be inserted into each inventory slot type.
 pub trait SlotType {
+    /// Checks if the provided item type can be inserted in this slot type.
     fn can_insert_into(&self, item_type: &Self) -> bool;
 }
 
@@ -107,10 +109,18 @@ impl SlotType for () {
 #[derive(new, Clone, Serialize, Deserialize, Debug)]
 pub enum InventorySizingMode {
     /// The inventory uses a fixed size.
-    Fixed { size: usize },
+    Fixed { 
+        /// The size of the inventory.
+        size: usize,
+    },
     /// The inventory grows and shrinks depending on the content.
     /// Slot restrictions are ignored in this mode.
-    Dynamic { min_size: usize, max_size: usize },
+    Dynamic {
+        /// The minimum size of the dynamic inventory.
+        min_size: usize,
+        /// The maximum size of the dynamic inventory.
+        max_size: usize,
+    },
 }
 
 /// The way items are removed from the inventory. Indicates if empty spots are left, and if not, how to fill them.
@@ -630,7 +640,8 @@ trait Recipe<K> {
     fn craft(&mut self, inputs: Vec<ItemInstance<K, U>>) -> Vec<ItemInstance<K, U>>;
 }*/
 
-#[cfg(test)]
+
+/*#[cfg(test)]
 mod test {
     use crate::*;
 
@@ -716,4 +727,4 @@ mod test {
         inv2.insert(ii).expect("");
         inv.transfer(0, &mut inv2, 1, 2, false).expect("");
     }
-}
+}*/

@@ -4,16 +4,29 @@ use std::fmt::Debug;
 use std::hash::Hash;
 // Different properties of a player/item/entity
 
+/// The definition of a stat.
+/// A stat is a named float value optionally constrained between two other values and with a
+/// default value. It is used to create effects, conditions and in general to hold state
+/// for each entity.
+/// For example, it can be used to contain the health or mana of an entity just as well as it
+/// can be used to keep track of the number of enemies positioned around an entity.
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
 pub struct StatDefinition<K> {
-    key: K,
+    /// The key.
+    pub key: K,
+    /// The name.
     pub name: String,
+    /// The computer friendly name.
     pub friendly_name: String,
+    /// The default value.
     pub default_value: f64,
+    /// The minimum value.
     #[new(default)]
     pub min_value: Option<f64>,
+    /// The maximum value.
     #[new(default)]
     pub max_value: Option<f64>,
+    /// The icon of this stat.
     #[new(default)]
     pub icon_path: Option<String>,
 }
@@ -25,16 +38,23 @@ impl<K: Clone> StatDefinition<K> {
     }
 }
 
+/// An instance of a stat.
+/// Contains a base value as well as a value after applying the stat effectors.
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
 pub struct StatInstance<K> {
+    /// The key of the stat.
     pub key: K,
+    /// The base value of the stat.
     pub value: f64,
+    /// The value of this stat after applying the effectors.
     #[new(value="value")]
     pub value_with_effectors: f64,
 }
 
+/// The definitions of all known stats.
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct StatDefinitions<K: Hash + Eq> {
+    /// The definitions.
     pub defs: HashMap<K, StatDefinition<K>>,
 }
 
@@ -47,6 +67,7 @@ impl<K: Hash+Eq> Default for StatDefinitions<K> {
 }
 
 impl<K: Hash + Eq + Clone> StatDefinitions<K> {
+    /// Converts the `StatDefinitions` into a `StatSet` using the default stat values.
     pub fn to_statset(&self) -> StatSet<K> {
         let instances = self
             .defs
@@ -67,8 +88,10 @@ impl<K: Hash + Eq + Clone> From<Vec<StatDefinition<K>>> for StatDefinitions<K> {
     }
 }
 
+/// Holds the definitions of the stat effectors.
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct EffectorDefinitions<K, E: Hash + Eq> {
+    /// The definitions.
     pub defs: HashMap<E, EffectorDefinition<K, E>>,
 }
 
@@ -92,13 +115,17 @@ impl<K: Hash + Eq + Clone, E: Hash + Eq + Clone> From<Vec<EffectorDefinition<K, 
     }
 }
 
+/// Holds the instances of all the stats an entity has.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, new)]
 pub struct StatSet<K: Hash + Eq> {
+    /// The stats.
     pub stats: HashMap<K, StatInstance<K>>,
 }
 
+/// A collection of currently active effectors.
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct EffectorSet<E> {
+    /// The active effectors.
     pub effectors: Vec<EffectorInstance<E>>,
 }
 
@@ -131,13 +158,18 @@ impl<E> Default for EffectorSet<E> {
 //    }
 //}
 
+/// Condition based on a stat to activate something.
 #[derive(Clone, Debug, Serialize, Deserialize, new)]
 pub struct StatCondition<K> {
+    /// The key of the stat.
     pub stat_key: K,
+    /// The type of condition.
     pub condition: StatConditionType,
 }
 
 impl<K: Hash + Eq + Debug> StatCondition<K> {
+    /// Checks if this stat condition is met using for the provided `StatSet` using the known
+    /// `StatDefinitions`.
     pub fn check(&self, stats: &StatSet<K>, stat_defs: &StatDefinitions<K>) -> bool {
         let v = stats.stats.get(&self.stat_key).expect(&format!(
             "Requested stat key {:?} is not in provided StatSet.",
@@ -152,22 +184,46 @@ impl<K: Hash + Eq + Debug> StatCondition<K> {
     }
 }
 
+/// A condition based on a stat's value.
 #[derive(Clone, Serialize, Deserialize, new, Derivative)]
 #[derivative(Debug)]
 pub enum StatConditionType {
+    /// The stat value must be higher or equal to this value.
     MinValue(f64),
+    /// The stat value must be between these values.
     BetweenValue(f64, f64),
+    /// The stat value must be lower or equal to this value.
     MaxValue(f64),
+    /// The minimum progress of the value between its minimum and maximum.
+    /// This calculates the distance between the minimum and maximum values, then assigns
+    /// a value between 0.0 and 1.0 that correspond to the absolute distance from the minimum.
+    /// If the minimum value is 10 and the maximum is 20 and we have a value of 15, then this
+    /// corresponds to a "distance" of 0.5 (50%!) of the way between 10 and 20.
     MinPercent(f64),
+    /// The minimum progress of the value between its minimum and maximum.
+    /// This calculates the distance between the minimum and maximum values, then assigns
+    /// a value between 0.0 and 1.0 that correspond to the absolute distance from the minimum.
+    /// If the minimum value is 10 and the maximum is 20 and we have a value of 15, then this
+    /// corresponds to a "distance" of 0.5 (50%!) of the way between 10 and 20.
     BetweenPercent(f64, f64),
+    /// The minimum progress of the value between its minimum and maximum.
+    /// This calculates the distance between the minimum and maximum values, then assigns
+    /// a value between 0.0 and 1.0 that correspond to the absolute distance from the minimum.
+    /// If the minimum value is 10 and the maximum is 20 and we have a value of 15, then this
+    /// corresponds to a "distance" of 0.5 (50%!) of the way between 10 and 20.
     MaxPercent(f64),
+    /// The value is divisible by this value.
+    /// DivisibleBy(2) is equivalent to (value % 2 == 0).
     DivisibleBy(i32),
+    /// A custom function that takes the value and returns whether the condition passed or not.
     #[serde(skip)]
     //Custom(#[derivative(Debug = "ignore")] std::sync::Arc<Box<dyn Fn(f64) -> bool>>),
     Custom(#[derivative(Debug = "ignore")] fn(f64) -> bool),
 }
 
 impl StatConditionType {
+    /// Checks if the condition is true using the actual value, as well as the minimum and maximum
+    /// values of the stat (found in the `StatDefinition`).
     pub fn is_true(&self, value: f64, min_value: Option<f64>, max_value: Option<f64>) -> bool {
         let percent = if let (Some(min_value), Some(max_value)) = (min_value, max_value) {
             Some((value - min_value) / (max_value - min_value))
@@ -198,23 +254,43 @@ impl StatConditionType {
     }
 }
 
+/// The definition of a stat effector.
+/// This modifies temporarily the value of a stat.
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct EffectorDefinition<K, E> {
+    /// The key of the effector.
     pub key: E,
-    // set to 0 for one shot
+    /// The duration of the effector.
+    /// None means that it does not expire.
+    /// Some(0) means that it is applied only once.
+    /// Some(n) means that it is applied for n seconds.
     pub duration: Option<f64>,
+    /// The effects that cause this effector.
+    /// Note that effectors can only cause effects on a single stat.
+    /// To affect multiple stats, create multiple effectors.
+    // TODO consider using only a single element here? It almost never happens that
+    // we want to apply multiple changes to the same stat.
     pub effects: Vec<(K, EffectorType)>,
 }
 
+/// The way this effector modifies the stat.
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub enum EffectorType {
+    /// Adds a value to the base value of the stat.
     Additive(f64),
+    /// Multiplies the stat by a value.
+    /// Stacks additively with other multipliers affecting this same stat.
     AdditiveMultiplier(f64),
+    /// Multiplies the stat by a value.
+    /// Stacks multiplicatively with other multipliers affecting this same stat.
     MultiplicativeMultiplier(f64),
 }
 
+/// An active instance of an effector.
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
 pub struct EffectorInstance<E> {
+    /// The key of the effector.
     pub effector_key: E,
+    /// The time before this effector expires.
     pub disable_in: Option<f64>,
 }

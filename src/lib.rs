@@ -1,3 +1,8 @@
+//! A crate providing advanced and general features for games.
+//! It can be used just as much for simple ascii games than for full distributed mmorpg games.
+
+#![deny(missing_docs)]
+
 #[macro_use]
 extern crate serde;
 #[macro_use]
@@ -7,7 +12,6 @@ extern crate derive_builder;
 #[macro_use]
 extern crate derivative;
 
-mod chat;
 mod faction;
 mod item;
 mod item_transition;
@@ -22,7 +26,6 @@ mod user;
 mod user_group;
 mod user_management;
 
-pub use self::chat::*;
 pub use self::faction::*;
 pub use self::item::*;
 pub use self::item_transition::*;

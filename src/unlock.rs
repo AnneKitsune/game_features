@@ -1,14 +1,22 @@
 use crate::{StatCondition, UseMode};
 
+/// An unlockable element.
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
 pub struct Unlockable<U, K, S, I> {
+    /// The key of this unlockable.
     pub id: U,
+    /// The thing we want to unlock access to.
     pub inner: K,
+    /// Whether we unlocked it or not.
     pub is_unlocked: bool,
+    /// The stat conditions required to unlock this element.
     #[new(default)]
     pub unlock_stat_conditions: Vec<StatCondition<S>>,
+    /// The item conditions required to unlock this element.
     #[new(default)]
     pub unlock_item_conditions: Vec<(I, usize, UseMode)>,
+    /// A list of other unlockables upon which this one depends.
+    /// If Unlockable B depends on A, then A must be unlocked before B can be unlocked.
     #[new(default)]
     pub unlock_dependencies: Vec<U>,
 }
@@ -65,3 +73,4 @@ impl<U, K, S, I> Unlockable<U, K, S, I> {
         self.is_unlocked
     }
 }
+// TODO make `Unlockables`.
