@@ -37,7 +37,7 @@ pub enum UseMode {
     /// Consumes the item. The item will be lost.
     Consume,
     /// Uses a set amount of durability from the item.
-    UseOnce { 
+    UseOnce {
         /// The amount of durability used.
         durability: f64,
     },

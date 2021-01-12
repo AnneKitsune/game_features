@@ -70,12 +70,12 @@ pub struct ItemInstance<K, U: Default> {
 
 /// A simple repository mapping the key K to the corresponding `ItemDefinition`.
 #[derive(Serialize, Deserialize, Clone, new)]
-pub struct ItemDefinitions<K: Hash+Eq, S, D: Default> {
+pub struct ItemDefinitions<K: Hash + Eq, S, D: Default> {
     /// The definitions.
     pub defs: HashMap<K, ItemDefinition<K, S, D>>,
 }
 
-impl<K: Hash+Eq, S, D: Default> Default for ItemDefinitions<K, S, D> {
+impl<K: Hash + Eq, S, D: Default> Default for ItemDefinitions<K, S, D> {
     fn default() -> Self {
         Self {
             defs: HashMap::default(),
@@ -83,7 +83,9 @@ impl<K: Hash+Eq, S, D: Default> Default for ItemDefinitions<K, S, D> {
     }
 }
 
-impl<K: Hash+Eq+Clone, S, D: Default> From<Vec<ItemDefinition<K, S, D>>> for ItemDefinitions<K, S, D> {
+impl<K: Hash + Eq + Clone, S, D: Default> From<Vec<ItemDefinition<K, S, D>>>
+    for ItemDefinitions<K, S, D>
+{
     fn from(t: Vec<ItemDefinition<K, S, D>>) -> Self {
         let defs = t
             .into_iter()
@@ -109,7 +111,7 @@ impl SlotType for () {
 #[derive(new, Clone, Serialize, Deserialize, Debug)]
 pub enum InventorySizingMode {
     /// The inventory uses a fixed size.
-    Fixed { 
+    Fixed {
         /// The size of the inventory.
         size: usize,
     },
@@ -161,9 +163,7 @@ pub struct Inventory<K, S: SlotType, U: Default> {
     pub sizing_mode: InventorySizingMode,
 }
 
-impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug>
-    Inventory<K, S, U>
-{
+impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inventory<K, S, U> {
     /// Creates a new `Inventory` with a fixed slot count.
     pub fn new_fixed(count: usize) -> Inventory<K, S, U> {
         let mut content = Vec::with_capacity(count);
@@ -639,7 +639,6 @@ pub struct BaseRecipeDefinition<K: PartialEq> {
 trait Recipe<K> {
     fn craft(&mut self, inputs: Vec<ItemInstance<K, U>>) -> Vec<ItemInstance<K, U>>;
 }*/
-
 
 /*#[cfg(test)]
 mod test {

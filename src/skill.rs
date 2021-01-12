@@ -39,7 +39,12 @@ pub struct SkillDefinition<K, E, S, I> {
 /// CD: Item Custom Data
 impl<K: Hash + Eq + Debug, E, S, I: Clone + PartialEq + Debug> SkillDefinition<K, E, S, I> {
     /// Checks if all the conditions to use this skill are met.
-    pub fn check_conditions<IT: SlotType, CD: Default + Clone + Debug>(&self, stats: &StatSet<K>, inventory: &Inventory<I, IT, CD>, stat_defs: &StatDefinitions<K>) -> bool {
+    pub fn check_conditions<IT: SlotType, CD: Default + Clone + Debug>(
+        &self,
+        stats: &StatSet<K>,
+        inventory: &Inventory<I, IT, CD>,
+        stat_defs: &StatDefinitions<K>,
+    ) -> bool {
         for c in &self.conditions {
             if !c.check(stats, stat_defs) {
                 return false;
@@ -78,9 +83,7 @@ impl<S: Hash + Eq + Clone> From<Vec<S>> for SkillSet<S> {
         for s in t {
             h.insert(s.clone(), SkillInstance::new(s, 0.0));
         }
-        Self {
-            skills: h,
-        }
+        Self { skills: h }
     }
 }
 
@@ -91,7 +94,7 @@ pub struct SkillDefinitions<K, E, S: Hash + Eq, I> {
     pub defs: HashMap<S, SkillDefinition<K, E, S, I>>,
 }
 
-impl<K, E, S: Hash+Eq, I> Default for SkillDefinitions<K, E, S, I> {
+impl<K, E, S: Hash + Eq, I> Default for SkillDefinitions<K, E, S, I> {
     fn default() -> Self {
         Self {
             defs: HashMap::default(),

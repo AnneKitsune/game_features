@@ -47,7 +47,7 @@ pub struct StatInstance<K> {
     /// The base value of the stat.
     pub value: f64,
     /// The value of this stat after applying the effectors.
-    #[new(value="value")]
+    #[new(value = "value")]
     pub value_with_effectors: f64,
 }
 
@@ -58,7 +58,7 @@ pub struct StatDefinitions<K: Hash + Eq> {
     pub defs: HashMap<K, StatDefinition<K>>,
 }
 
-impl<K: Hash+Eq> Default for StatDefinitions<K> {
+impl<K: Hash + Eq> Default for StatDefinitions<K> {
     fn default() -> Self {
         Self {
             defs: HashMap::default(),
@@ -95,7 +95,7 @@ pub struct EffectorDefinitions<K, E: Hash + Eq> {
     pub defs: HashMap<E, EffectorDefinition<K, E>>,
 }
 
-impl<K, E: Hash+Eq> Default for EffectorDefinitions<K, E> {
+impl<K, E: Hash + Eq> Default for EffectorDefinitions<K, E> {
     fn default() -> Self {
         Self {
             defs: HashMap::default(),
@@ -131,17 +131,20 @@ pub struct EffectorSet<E> {
 
 impl<E> Default for EffectorSet<E> {
     fn default() -> Self {
-        Self {
-            effectors: vec![],
-        }
+        Self { effectors: vec![] }
     }
 }
 
-impl<E: Hash+Eq> EffectorSet<E> {
+impl<E: Hash + Eq> EffectorSet<E> {
     /// Applies the effects of this effector to the provided `StatSet`.
     /// The delta time is used when using effectors that apply directly to
     /// the base stat value. (WIP)
-    pub fn apply_to<K: Eq+Hash>(self: &Self, effector_defs: &EffectorDefinitions<K, E>, stat_set: &mut StatSet<K>, _delta_time: f32) {
+    pub fn apply_to<K: Eq + Hash>(
+        self: &Self,
+        effector_defs: &EffectorDefinitions<K, E>,
+        stat_set: &mut StatSet<K>,
+        _delta_time: f32,
+    ) {
         for mut s in stat_set.stats.values_mut() {
             let mut new_value = s.value;
             let mut multiplicative_multiplier = 1.0;
@@ -289,12 +292,8 @@ impl StatConditionType {
             StatConditionType::MaxPercent(p) => {
                 percent.expect("This stat doesn't have min/max values.") <= *p
             }
-            StatConditionType::DivisibleBy(p) => {
-                value as i32 % p == 0
-            }
-            StatConditionType::Custom(e) => {
-                e(value)
-            },
+            StatConditionType::DivisibleBy(p) => value as i32 % p == 0,
+            StatConditionType::Custom(e) => e(value),
         }
     }
 }
