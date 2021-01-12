@@ -137,6 +137,51 @@ impl<E> Default for EffectorSet<E> {
     }
 }
 
+impl<E: Hash+Eq> EffectorSet<E> {
+    /// Applies the effects of this effector to the provided `StatSet`.
+    /// The delta time is used when using effectors that apply directly to
+    /// the base stat value. (WIP)
+    pub fn apply_to<K: Eq+Hash>(self: &Self, effector_defs: &EffectorDefinitions<K, E>, stat_set: &mut StatSet<K>, _delta_time: f32) {
+        for mut s in stat_set.stats.values_mut() {
+            let mut new_value = s.value;
+            let mut multiplicative_multiplier = 1.0;
+            let mut additive_multiplier = 0.0;
+            let mut additive = 0.0;
+            // find effectors affecting this stat
+            for e in self.effectors.iter() {
+                let def = effector_defs
+                    .defs
+                    .get(&e.effector_key)
+                    .expect("Tried to get unknown stat key.");
+
+                // Algo:
+                // - Apply all multiplicative multipliers
+                // - Apply all additive multipliers
+                // - Apply all additives
+
+                // look into the effect of each effector
+                for (key, ty) in def.effects.iter() {
+                    // if any matches
+                    if *key == s.key {
+                        // Apply Effector
+                        match ty {
+                            EffectorType::Additive(v) => additive += v,
+                            EffectorType::AdditiveMultiplier(v) => additive_multiplier += v,
+                            EffectorType::MultiplicativeMultiplier(v) => {
+                                multiplicative_multiplier *= v
+                            }
+                        }
+                    }
+                }
+            }
+            let multiplier = multiplicative_multiplier + additive_multiplier;
+            new_value += additive;
+            new_value *= multiplier;
+            s.value_with_effectors = new_value;
+        }
+    }
+}
+
 //impl<K: Hash+Eq> StatSet<K> {
 //    pub fn update(&mut self, delta_time: f64, stat_set: &mut StatSet<K>) {
 //        let mut rm_idx = vec![];
