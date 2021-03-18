@@ -255,7 +255,7 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
         target: &mut Inventory<K, S, U>,
         to_idx: usize,
         quantity: usize,
-        with_overflow: bool,
+        _with_overflow: bool,
     ) -> Result<(), ItemError<K, U>> {
         let mv = self.delete(from_idx, quantity)?;
         target.insert_into(to_idx, mv)?;
@@ -300,7 +300,7 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
         from_idx: usize,
         to_idx: usize,
         quantity: usize,
-        with_overflow: bool,
+        _with_overflow: bool,
     ) -> Result<(), ItemError<K, U>> {
         let mv = self.delete(from_idx, quantity)?;
         self.insert_into(to_idx, mv)?;
