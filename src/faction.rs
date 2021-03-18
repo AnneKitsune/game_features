@@ -16,7 +16,11 @@ pub struct Faction {
 
 impl Faction {
     /// Claim terrain from another faction.
-    pub fn claim_from(&mut self, _other: &mut Faction, _settings: &FactionSettings) -> FactionResult {
+    pub fn claim_from(
+        &mut self,
+        _other: &mut Faction,
+        _settings: &FactionSettings,
+    ) -> FactionResult {
         // TODO
         Ok(())
     }
