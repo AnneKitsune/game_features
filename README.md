@@ -5,7 +5,9 @@
 [docs-badge]: https://img.shields.io/badge/docs-website-blue.svg
 [docs]: https://docs.rs/game_features
 
-Support what I do on [Patreon](https://www.patreon.com/jojolepro).
+Support an Open Source Developer! :hearts:  
+
+[![Become a patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/jojolepro)
 
 
 The goal of the library is to share common game features between developers.
@@ -24,12 +26,24 @@ By making as many of the general game features as possible open source, the game
 
 This library aims to do just that. It is a repository where we will share and develop together those reusable game pieces.
 
-Here's some examples of such game features:
-* Inventory systems
-* User management
-* Game chat
-* Permissions 
-* And many others
+## Features
+
+#### Implemented
+
+* Extensible and fully-featured Inventory system
+* Complex Loot Trees
+* Stats, Stats Modifiers
+* Skills
+* Unlockables Tree
+
+#### Planned
+
+* Player Authentication
+* User Management (kick, ban, mute, etc)
+* User Permissions
+* Group Based Chat Formatting and Scopes
+* World ownership and protection systems
+* Faction-based claiming systems.
 
 ## Principles
 
@@ -52,25 +66,6 @@ Even better, since all data is meant to be serialized, and is created by composi
 * Inspect it
 * Debug changes
 * Painlessly refactor
-
-## Features
-
-#### Implemented
-
-* Extensible and fully-featured Inventory system
-* Complex Loot Trees
-* Stats, Stats Modifiers
-* Skills
-* Unlockables
-
-#### Planned
-
-* Player Authentication
-* User Management (kick, ban, mute, etc)
-* User Permissions
-* Group Based Chat Formatting and Scopes
-* World ownership and protection systems
-* Faction-based claiming systems.
 
 
 #### Stats? Items? Skills? What are those?
