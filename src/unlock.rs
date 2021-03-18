@@ -82,7 +82,7 @@ impl<U, K, S, I> Unlockable<U, K, S, I> {
 
 /// A structure holding all unlockables.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, new)]
-pub struct Unlockables<U: Hash+Eq, K, S, I> {
+pub struct Unlockables<U: Hash + Eq, K, S, I> {
     /// The unlockables we are holding.
     pub unlockables: HashMap<U, Unlockable<U, K, S, I>>,
 }
