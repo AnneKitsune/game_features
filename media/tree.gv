@@ -1,0 +1,14 @@
+digraph G {
+    ROOT -> Weapon [label="50%"];
+    ROOT -> Armor [label="50%"];
+    Weapon -> Sword [label="25%"];
+    Weapon -> Bow [label="25%"];
+    Weapon -> Mace [label="25%"];
+    Weapon -> Shield [label="25%"];
+    Armor -> Helmet [label="16.66%"];
+    Armor -> ChestPlate [label="16.66%"];
+    Armor -> Leggings [label="16.66%"];
+    Armor -> Boots [label="16.66%"];
+    Armor -> Robe [label="16.66%"];
+    Armor -> Chainmail [label="16.66%"];
+}

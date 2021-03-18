@@ -1,6 +1,12 @@
 use crate::{StatCondition, UseMode};
+use std::collections::HashMap;
+use std::hash::Hash;
 
 /// An unlockable element.
+/// It can be unlocked to access the inner value if all conditions are met:
+/// - `StatCondition`s
+/// - Item Conditions
+/// - Dependant unlockables were previously unlocked.
 #[derive(Debug, Clone, Serialize, Deserialize, new, Builder)]
 pub struct Unlockable<U, K, S, I> {
     /// The key of this unlockable.
@@ -73,4 +79,11 @@ impl<U, K, S, I> Unlockable<U, K, S, I> {
         self.is_unlocked
     }
 }
-// TODO make `Unlockables`.
+
+/// A structure holding all unlockables.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, new)]
+pub struct Unlockables<U: Hash+Eq, K, S, I> {
+    /// The unlockables we are holding.
+    pub unlockables: HashMap<U, Unlockable<U, K, S, I>>,
+}
+// TODO impl to try unlock and to try unlock recursively.

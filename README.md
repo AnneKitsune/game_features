@@ -28,13 +28,32 @@ This library aims to do just that. It is a repository where we will share and de
 
 ## Features
 
-#### Implemented
+### Implemented
+The following images come from games used as inspiration for those features and
+show how they can be used in various games.
 
-* Extensible and fully-featured Inventory system
-* Complex Loot Trees
-* Stats, Stats Modifiers
-* Skills
-* Unlockables Tree
+#### Extensible and Fully-Featured Inventory System
+
+An item and inventory system that supports both statically sized and dynamically
+sized inventories.
+![Statically sized inventory](./media/static_inventory.png)
+![Dynamically sized inventory](./media/dynamic-inventory.jpg)
+
+#### Simple Loot Trees
+
+![Loot Trees](./media/tree.png)
+
+#### Stats and Stats Modifiers
+
+![Item and Stat Modifiers](./media/item_stats.jpg)
+
+#### Active and Passive Skills
+
+![Skills](./media/skills.png)
+
+#### Unlockable Trees
+
+![Unlockable Tree](./media/unlockable.png)
 
 #### Planned
 
