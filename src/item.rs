@@ -143,8 +143,9 @@ pub enum MoveToFrontMode {
 // TODO Respect maximum stack size
 
 /// # Generics
-/// K: Item Type
-/// T: Slot
+/// - K: Item Type
+/// - S: Type of inventory location
+/// - U: Custom item data
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
 pub struct Inventory<K, S: SlotType, U: Default> {
     /// The contents of the `Inventory`.
@@ -506,14 +507,14 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
         item: ItemInstance<K, U>,
     ) -> Result<(), ItemError<K, U>> {
         // TODO match keys and see if stackable
-        if let Some(opt) = self.content.get_mut(idx) {
-            if opt.is_some() {
-                return Err(ItemError::SlotOccupied);
-            }
-            *opt = Some(item);
-            Ok(())
-        } else {
-            panic!("Out of bound inventory insertion at index {}", idx);
+        let opt = self.content.get_mut(idx);
+        match opt {
+            Some(Some(_)) => Err(ItemError::SlotOccupied),
+            Some(None) => {
+                *opt.unwrap() = Some(item);
+                Ok(())
+            },
+            None => panic!("Out of bound inventory insertion at index {}", idx),
         }
     }
 
@@ -552,21 +553,12 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
     pub fn first_empty_slot(&self) -> Option<usize> {
         match self.move_to_front {
             MoveToFrontMode::None => {
-                let mut ret = self
+                let ret = self
                     .content
                     .iter()
                     .enumerate()
                     .find(|t| t.1.is_none())
                     .map(|t| t.0);
-                if let InventorySizingMode::Dynamic {
-                    min_size: _,
-                    max_size,
-                } = self.sizing_mode
-                {
-                    if ret.is_none() && self.content.len() < max_size {
-                        ret = Some(self.content.len());
-                    }
-                }
                 ret
             }
             MoveToFrontMode::TakeLast | MoveToFrontMode::Offset => {
