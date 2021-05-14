@@ -1,5 +1,8 @@
 use crate::*;
 
+use std::collections::HashMap;
+use std::hash::Hash;
+
 // crafting
 /// A transition from one or more items into one or more different items.
 /// Can be used for all sorts of crafting.
@@ -70,4 +73,19 @@ pub struct ItemTransitionBatch<K> {
     remaining: u32,
     /// The time until the current transition is completed.
     next_completion_remaining: f64,
+}
+
+/// The definitions of all known stats.
+#[derive(Debug, Clone, Serialize, Deserialize, new)]
+pub struct ItemTransitionDefinitions<K: Hash + Eq, I, E, S, U: Default> {
+    /// The definitions.
+    pub defs: HashMap<K, ItemTransitionDefinition<K, I, E, S, U>>,
+}
+
+impl<K: Hash + Eq, I, E, S, U: Default> Default for ItemTransitionDefinitions<K, I, E, S, U> {
+    fn default() -> Self {
+        Self {
+            defs: HashMap::default(),
+        }
+    }
 }
