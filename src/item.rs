@@ -513,7 +513,7 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
             Some(None) => {
                 *opt.unwrap() = Some(item);
                 Ok(())
-            },
+            }
             None => panic!("Out of bound inventory insertion at index {}", idx),
         }
     }
