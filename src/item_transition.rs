@@ -90,7 +90,9 @@ impl<K: Hash + Eq, I, E, S, U: Default> Default for ItemTransitionDefinitions<K,
     }
 }
 
-impl<K: Hash + Eq + Clone, I, E, S, U: Default> From<Vec<ItemTransitionDefinition<K, I, E, S, U>>> for ItemTransitionDefinitions<K, I, E, S, U> {
+impl<K: Hash + Eq + Clone, I, E, S, U: Default> From<Vec<ItemTransitionDefinition<K, I, E, S, U>>>
+    for ItemTransitionDefinitions<K, I, E, S, U>
+{
     fn from(t: Vec<ItemTransitionDefinition<K, I, E, S, U>>) -> Self {
         let defs = t
             .into_iter()
