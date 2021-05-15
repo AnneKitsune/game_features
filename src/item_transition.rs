@@ -35,7 +35,7 @@ pub struct ItemTransitionDefinition<K, I, E, S> {
 }
 
 /// The way items are used in a transition.
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub enum UseMode {
     /// Consumes the item. The item will be lost.
     Consume,
