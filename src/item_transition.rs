@@ -7,7 +7,7 @@ use std::hash::Hash;
 /// A transition from one or more items into one or more different items.
 /// Can be used for all sorts of crafting.
 #[derive(new, Clone, Serialize, Deserialize, Debug, Builder)]
-pub struct ItemTransitionDefinition<K, I, E, S, U: Default> {
+pub struct ItemTransitionDefinition<K, I, E, S> {
     /// The id of this item transition.
     pub key: K,
     /// The name of the transition.
@@ -23,7 +23,7 @@ pub struct ItemTransitionDefinition<K, I, E, S, U: Default> {
     /// The effectors applied during crafting.
     pub stat_effectors: Vec<E>,
     /// The different output items.
-    pub output_items: Vec<ItemInstance<I, U>>,
+    pub output_items: Vec<(I, usize)>,
     /// What happens when you lose the condition required to continue the transition.
     pub on_condition_lost: ConditionLostReaction,
     /// The time to complete the transition.
@@ -77,12 +77,12 @@ pub struct ItemTransitionBatch<K> {
 
 /// The definitions of all known stats.
 #[derive(Debug, Clone, Serialize, Deserialize, new)]
-pub struct ItemTransitionDefinitions<K: Hash + Eq, I, E, S, U: Default> {
+pub struct ItemTransitionDefinitions<K: Hash + Eq, I, E, S> {
     /// The definitions.
-    pub defs: HashMap<K, ItemTransitionDefinition<K, I, E, S, U>>,
+    pub defs: HashMap<K, ItemTransitionDefinition<K, I, E, S>>,
 }
 
-impl<K: Hash + Eq, I, E, S, U: Default> Default for ItemTransitionDefinitions<K, I, E, S, U> {
+impl<K: Hash + Eq, I, E, S> Default for ItemTransitionDefinitions<K, I, E, S> {
     fn default() -> Self {
         Self {
             defs: HashMap::default(),
@@ -90,10 +90,10 @@ impl<K: Hash + Eq, I, E, S, U: Default> Default for ItemTransitionDefinitions<K,
     }
 }
 
-impl<K: Hash + Eq + Clone, I, E, S, U: Default> From<Vec<ItemTransitionDefinition<K, I, E, S, U>>>
-    for ItemTransitionDefinitions<K, I, E, S, U>
+impl<K: Hash + Eq + Clone, I, E, S> From<Vec<ItemTransitionDefinition<K, I, E, S>>>
+    for ItemTransitionDefinitions<K, I, E, S>
 {
-    fn from(t: Vec<ItemTransitionDefinition<K, I, E, S, U>>) -> Self {
+    fn from(t: Vec<ItemTransitionDefinition<K, I, E, S>>) -> Self {
         let defs = t
             .into_iter()
             .map(|s| (s.key.clone(), s))
