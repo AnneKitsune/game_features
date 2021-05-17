@@ -68,9 +68,13 @@ pub struct ItemInstance<K, U: Default> {
     pub user_data: U,
 }
 
-impl<K: Eq + Hash, U:Default + PartialEq> ItemInstance<K, U> {
+impl<K: Eq + Hash, U: Default + PartialEq> ItemInstance<K, U> {
     /// Attempts to move as much quantity from other to self as possible.
-    pub fn merge<S, U2: Default>(&mut self, other: &mut Self, item_defs: &ItemDefinitions<K, S, U2>) {
+    pub fn merge<S, U2: Default>(
+        &mut self,
+        other: &mut Self,
+        item_defs: &ItemDefinitions<K, S, U2>,
+    ) {
         if self.key == other.key && self.user_data == other.user_data {
             let new_quantity = self.quantity + other.quantity;
             if let Some(def) = item_defs.defs.get(&self.key) {
@@ -183,7 +187,12 @@ pub struct Inventory<K, S: SlotType, U: Default> {
     pub sizing_mode: InventorySizingMode,
 }
 
-impl<K: PartialEq + Clone + Debug + Hash + Eq, S: SlotType, U: Default + Clone + Debug + PartialEq> Inventory<K, S, U> {
+impl<
+        K: PartialEq + Clone + Debug + Hash + Eq,
+        S: SlotType,
+        U: Default + Clone + Debug + PartialEq,
+    > Inventory<K, S, U>
+{
     /// Creates a new `Inventory` with a fixed slot count.
     pub fn new_fixed(count: usize) -> Inventory<K, S, U> {
         let mut content = Vec::with_capacity(count);
@@ -532,9 +541,7 @@ impl<K: PartialEq + Clone + Debug + Hash + Eq, S: SlotType, U: Default + Clone +
     ) -> Result<(), ItemError<K, U>> {
         let opt = self.content.get_mut(idx);
         match opt {
-            Some(Some(_)) => {
-                Err(ItemError::SlotOccupied)
-            },
+            Some(Some(_)) => Err(ItemError::SlotOccupied),
             Some(None) => {
                 *opt.unwrap() = Some(item);
                 Ok(())
@@ -550,7 +557,11 @@ impl<K: PartialEq + Clone + Debug + Hash + Eq, S: SlotType, U: Default + Clone +
     ///
     /// Errors:
     /// * InventoryFull: The inventory is full and no more space can be created.
-    pub fn insert<U2: Default>(&mut self, mut item: ItemInstance<K, U>, item_defs: &ItemDefinitions<K, S, U2>) -> Result<(), ItemError<K, U>> {
+    pub fn insert<U2: Default>(
+        &mut self,
+        mut item: ItemInstance<K, U>,
+        item_defs: &ItemDefinitions<K, S, U2>,
+    ) -> Result<(), ItemError<K, U>> {
         for inst in self.get_key_mut(&item.key) {
             if item.quantity == 0 {
                 break;
@@ -574,7 +585,8 @@ impl<K: PartialEq + Clone + Debug + Hash + Eq, S: SlotType, U: Default + Clone +
                     // Attempt to make room.
                     if self.has_space() {
                         self.content.push(None);
-                        self.insert_into(self.content.len() - 1, item, item_defs).unwrap();
+                        self.insert_into(self.content.len() - 1, item, item_defs)
+                            .unwrap();
                         Ok(())
                     } else {
                         Err(ItemError::InventoryFull)
