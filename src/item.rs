@@ -68,6 +68,25 @@ pub struct ItemInstance<K, U: Default> {
     pub user_data: U,
 }
 
+impl<K: Eq + Hash, U:Default + PartialEq> ItemInstance<K, U> {
+    /// Attempts to move as much quantity from other to self as possible.
+    pub fn merge<S, U2: Default>(&mut self, other: &mut Self, item_defs: &ItemDefinitions<K, S, U2>) {
+        if self.key == other.key && self.user_data == other.user_data {
+            let new_quantity = self.quantity + other.quantity;
+            if let Some(def) = item_defs.defs.get(&self.key) {
+                let can_take = if def.maximum_stack.is_some() {
+                    // can break if your stack is over the maximum amount allowed
+                    std::cmp::min(def.maximum_stack.unwrap() - self.quantity, other.quantity)
+                } else {
+                    other.quantity
+                };
+                self.quantity += can_take;
+                other.quantity -= can_take;
+            }
+        }
+    }
+}
+
 /// A simple repository mapping the key K to the corresponding `ItemDefinition`.
 #[derive(Serialize, Deserialize, Clone, new)]
 pub struct ItemDefinitions<K: Hash + Eq, S, D: Default> {
@@ -164,7 +183,7 @@ pub struct Inventory<K, S: SlotType, U: Default> {
     pub sizing_mode: InventorySizingMode,
 }
 
-impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inventory<K, S, U> {
+impl<K: PartialEq + Clone + Debug + Hash + Eq, S: SlotType, U: Default + Clone + Debug + PartialEq> Inventory<K, S, U> {
     /// Creates a new `Inventory` with a fixed slot count.
     pub fn new_fixed(count: usize) -> Inventory<K, S, U> {
         let mut content = Vec::with_capacity(count);
@@ -250,16 +269,17 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
     ///
     /// Errors:
     /// See `Transform::delete` and `Transform::insert_into`.
-    pub fn transfer(
+    pub fn transfer<U2: Default>(
         &mut self,
         from_idx: usize,
         target: &mut Inventory<K, S, U>,
         to_idx: usize,
         quantity: usize,
         _with_overflow: bool,
+        item_defs: &ItemDefinitions<K, S, U2>,
     ) -> Result<(), ItemError<K, U>> {
         let mv = self.delete(from_idx, quantity)?;
-        target.insert_into(to_idx, mv)?;
+        target.insert_into(to_idx, mv, item_defs)?;
         // TODO overflow control
         // TODO stack maximum size
         Ok(())
@@ -272,19 +292,20 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
     ///
     /// Errors:
     /// See `Transform::delete` and `Transform::insert_into`.
-    pub fn transfer_stack(
+    pub fn transfer_stack<U2: Default>(
         &mut self,
         from_idx: usize,
         target: &mut Inventory<K, S, U>,
         to_idx: usize,
         with_overflow: bool,
+        item_defs: &ItemDefinitions<K, S, U2>,
     ) -> Result<(), ItemError<K, U>> {
         if let Some(Some(qty)) = self
             .content
             .get(from_idx)
             .map(|i| i.as_ref().map(|i2| i2.quantity))
         {
-            self.transfer(from_idx, target, to_idx, qty, with_overflow)
+            self.transfer(from_idx, target, to_idx, qty, with_overflow, item_defs)
         } else {
             Err(ItemError::SlotEmpty)
         }
@@ -296,15 +317,16 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
     ///
     /// Errors:
     /// See `Inventory::delete` and `Inventory::insert_into`.
-    pub fn move_item(
+    pub fn move_item<U2: Default>(
         &mut self,
         from_idx: usize,
         to_idx: usize,
         quantity: usize,
         _with_overflow: bool,
+        item_defs: &ItemDefinitions<K, S, U2>,
     ) -> Result<(), ItemError<K, U>> {
         let mv = self.delete(from_idx, quantity)?;
-        self.insert_into(to_idx, mv)?;
+        self.insert_into(to_idx, mv, item_defs)?;
         Ok(())
     }
 
@@ -316,18 +338,19 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
     ///
     /// Errors:
     /// * SlotEmpty: Nothing is present in the specified slot.
-    pub fn move_stack(
+    pub fn move_stack<U2: Default>(
         &mut self,
         from_idx: usize,
         to_idx: usize,
         with_overflow: bool,
+        item_defs: &ItemDefinitions<K, S, U2>,
     ) -> Result<(), ItemError<K, U>> {
         if let Some(Some(qty)) = self
             .content
             .get(from_idx)
             .map(|i| i.as_ref().map(|i2| i2.quantity))
         {
-            self.move_item(from_idx, to_idx, qty, with_overflow)
+            self.move_item(from_idx, to_idx, qty, with_overflow, item_defs)
         } else {
             Err(ItemError::SlotEmpty)
         }
@@ -501,15 +524,17 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
     ///
     /// Errors:
     /// * SlotOccupied: The slot is currently occupied by another item type.
-    pub fn insert_into(
+    pub fn insert_into<U2: Default>(
         &mut self,
         idx: usize,
         item: ItemInstance<K, U>,
+        item_defs: &ItemDefinitions<K, S, U2>,
     ) -> Result<(), ItemError<K, U>> {
-        // TODO match keys and see if stackable
         let opt = self.content.get_mut(idx);
         match opt {
-            Some(Some(_)) => Err(ItemError::SlotOccupied),
+            Some(Some(_)) => {
+                Err(ItemError::SlotOccupied)
+            },
             Some(None) => {
                 *opt.unwrap() = Some(item);
                 Ok(())
@@ -525,9 +550,19 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
     ///
     /// Errors:
     /// * InventoryFull: The inventory is full and no more space can be created.
-    pub fn insert(&mut self, item: ItemInstance<K, U>) -> Result<(), ItemError<K, U>> {
+    pub fn insert<U2: Default>(&mut self, mut item: ItemInstance<K, U>, item_defs: &ItemDefinitions<K, S, U2>) -> Result<(), ItemError<K, U>> {
+        for inst in self.get_key_mut(&item.key) {
+            if item.quantity == 0 {
+                break;
+            }
+            inst.merge(&mut item, item_defs);
+        }
+        if item.quantity == 0 {
+            return Ok(());
+        }
+        // We have to insert into a new slot.
         if let Some(slot) = self.first_empty_slot() {
-            self.insert_into(slot, item).unwrap();
+            self.insert_into(slot, item, item_defs).unwrap();
             Ok(())
         } else {
             match self.sizing_mode {
@@ -539,7 +574,7 @@ impl<K: PartialEq + Clone + Debug, S: SlotType, U: Default + Clone + Debug> Inve
                     // Attempt to make room.
                     if self.has_space() {
                         self.content.push(None);
-                        self.insert_into(self.content.len() - 1, item).unwrap();
+                        self.insert_into(self.content.len() - 1, item, item_defs).unwrap();
                         Ok(())
                     } else {
                         Err(ItemError::InventoryFull)

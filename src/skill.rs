@@ -37,9 +37,9 @@ pub struct SkillDefinition<K, E, S, I> {
 /// I: Item Key
 /// IT: Item Type
 /// CD: Item Custom Data
-impl<K: Hash + Eq + Debug, E, S, I: Clone + PartialEq + Debug> SkillDefinition<K, E, S, I> {
+impl<K: Hash + Eq + Debug, E, S, I: Hash + Eq + Clone + PartialEq + Debug> SkillDefinition<K, E, S, I> {
     /// Checks if all the conditions to use this skill are met.
-    pub fn check_conditions<IT: SlotType, CD: Default + Clone + Debug>(
+    pub fn check_conditions<IT: SlotType, CD: PartialEq + Default + Clone + Debug>(
         &self,
         stats: &StatSet<K>,
         inventory: &Inventory<I, IT, CD>,
