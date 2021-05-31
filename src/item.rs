@@ -76,7 +76,6 @@ impl<K: Eq + Hash, U: Default + PartialEq> ItemInstance<K, U> {
         item_defs: &ItemDefinitions<K, S, U2>,
     ) {
         if self.key == other.key && self.user_data == other.user_data {
-            let new_quantity = self.quantity + other.quantity;
             if let Some(def) = item_defs.defs.get(&self.key) {
                 let can_take = if def.maximum_stack.is_some() {
                     // can break if your stack is over the maximum amount allowed
@@ -537,8 +536,10 @@ impl<
         &mut self,
         idx: usize,
         item: ItemInstance<K, U>,
-        item_defs: &ItemDefinitions<K, S, U2>,
+        _item_defs: &ItemDefinitions<K, S, U2>,
     ) -> Result<(), ItemError<K, U>> {
+        // TODO implement trying to insert whole `item` stack into current stack, otherwise give
+        // up.
         let opt = self.content.get_mut(idx);
         match opt {
             Some(Some(_)) => Err(ItemError::SlotOccupied),
