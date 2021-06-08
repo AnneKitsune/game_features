@@ -12,6 +12,7 @@ extern crate derive_builder;
 
 mod faction;
 mod inventory;
+mod effector;
 mod item;
 mod item_transition;
 mod loot_tree;
@@ -28,6 +29,7 @@ mod user_management;
 pub use self::faction::*;
 pub use self::inventory::*;
 pub use self::item::*;
+pub use self::effector::*;
 pub use self::item_transition::*;
 pub use self::loot_tree::*;
 pub use self::permissions::*;
