@@ -1,6 +1,6 @@
 use crate::*;
-use std::hash::Hash;
 use std::fmt::Debug;
+use std::hash::Hash;
 
 /// The way the inventory size is handled.
 #[derive(new, Clone, Serialize, Deserialize, Debug)]

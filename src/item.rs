@@ -129,8 +129,6 @@ impl SlotType for () {
     }
 }
 
-
-
 // TODO extra stuff
 /*pub struct SingleEquippedItem<K> {
     pub equipped_index: usize,
