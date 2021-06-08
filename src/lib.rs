@@ -10,9 +10,9 @@ extern crate derive_new;
 #[macro_use]
 extern crate derive_builder;
 
+mod effector;
 mod faction;
 mod inventory;
-mod effector;
 mod item;
 mod item_transition;
 mod loot_tree;
@@ -26,10 +26,10 @@ mod user;
 mod user_group;
 mod user_management;
 
+pub use self::effector::*;
 pub use self::faction::*;
 pub use self::inventory::*;
 pub use self::item::*;
-pub use self::effector::*;
 pub use self::item_transition::*;
 pub use self::loot_tree::*;
 pub use self::permissions::*;

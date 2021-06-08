@@ -1,6 +1,6 @@
 use crate::*;
-use std::hash::Hash;
 use std::collections::HashMap;
+use std::hash::Hash;
 
 /// Holds the definitions of the stat effectors.
 #[derive(Debug, Clone, Serialize, Deserialize, new)]

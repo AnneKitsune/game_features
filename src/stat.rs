@@ -207,5 +207,3 @@ impl StatConditionType {
         }
     }
 }
-
-
