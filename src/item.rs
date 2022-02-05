@@ -237,4 +237,3 @@ mod test {
         inv.transfer(0, &mut inv2, 1, 2, false).expect("");
     }
 }*/
-
