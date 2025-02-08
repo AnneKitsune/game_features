@@ -8,7 +8,7 @@ keywords = ["game", "features", "utils"]
 documentation = "https://docs.rs/game_features"
 repository = "https://github.com/AnneKitsune/game_features"
 license = "AGPL-3.0-or-later"
-edition = "2018"
+edition = "2021"
 exclude = ["doc"]
 
 [dependencies]
