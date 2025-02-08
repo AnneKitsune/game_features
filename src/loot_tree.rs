@@ -1,5 +1,5 @@
 use partial_function::LowerPartialFunction;
-use rand::{thread_rng, Rng};
+use rand::{rng, Rng};
 
 /// A weighted node of a loot tree with the corresponding result.
 #[derive(Deserialize)]
@@ -29,7 +29,7 @@ impl<R: Clone + 'static> LootTreeBuilder<R> {
         let mut accum = 0;
         for n in self.nodes.into_iter() {
             let tmp = n.chances;
-            f = f.with(accum, move |_| n.result.clone());
+            f = f.with(accum, Box::new(move |_| n.result.clone()));
             accum = accum + tmp;
         }
         LootTree {
@@ -62,7 +62,7 @@ pub struct LootTree<R> {
 impl<R> LootTree<R> {
     /// Returns a random item from the loot tree.
     pub fn roll(&self) -> Option<R> {
-        let rng = thread_rng().gen_range(0, self.max);
+        let rng = rng().random_range(0..self.max);
         self.partial_func.eval(rng)
     }
 }
