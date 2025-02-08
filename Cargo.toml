@@ -1,13 +1,13 @@
 [package]
 name = "game_features"
 version = "0.8.1"
-authors = ["jojolepro <jojolepromain@gmail.com>"]
+authors = ["AnneKitsune <annekitsunefox@gmail.com>"]
 description = "Various helpful constructs for game development. See the github repository for detailed instructions."
 categories = ["game-engines"]
 keywords = ["game", "features", "utils"]
 documentation = "https://docs.rs/game_features"
-repository = "https://github.com/jojolepro/game_features"
-license = "Apache-2.0"
+repository = "https://github.com/AnneKitsune/game_features"
+license = "AGPL-3.0-or-later"
 edition = "2018"
 exclude = ["doc"]
 
