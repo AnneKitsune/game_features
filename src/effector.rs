@@ -52,7 +52,7 @@ impl<E: Hash + Eq> EffectorSet<E> {
         stat_set: &mut StatSet<K>,
         _delta_time: f32,
     ) {
-        for mut s in stat_set.stats.values_mut() {
+        for s in stat_set.stats.values_mut() {
             let mut new_value = s.value;
             let mut multiplicative_multiplier = 1.0;
             let mut additive_multiplier = 0.0;
