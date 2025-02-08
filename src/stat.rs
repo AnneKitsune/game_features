@@ -1,4 +1,3 @@
-use derivative::*;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -143,8 +142,7 @@ impl<K: Hash + Eq + Debug> StatCondition<K> {
 }
 
 /// A condition based on a stat's value.
-#[derive(Clone, Serialize, Deserialize, new, Derivative)]
-#[derivative(Debug)]
+#[derive(Clone, Serialize, Deserialize, new, Debug)]
 pub enum StatConditionType {
     /// The stat value must be higher or equal to this value.
     MinValue(f64),
@@ -173,10 +171,6 @@ pub enum StatConditionType {
     /// The value is divisible by this value.
     /// DivisibleBy(2) is equivalent to (value % 2 == 0).
     DivisibleBy(i32),
-    /// A custom function that takes the value and returns whether the condition passed or not.
-    #[serde(skip)]
-    //Custom(#[derivative(Debug = "ignore")] std::sync::Arc<Box<dyn Fn(f64) -> bool>>),
-    Custom(#[derivative(Debug = "ignore")] fn(f64) -> bool),
 }
 
 impl StatConditionType {
@@ -203,7 +197,6 @@ impl StatConditionType {
                 percent.expect("This stat doesn't have min/max values.") <= *p
             }
             StatConditionType::DivisibleBy(p) => value as i32 % p == 0,
-            StatConditionType::Custom(e) => e(value),
         }
     }
 }

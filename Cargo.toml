@@ -1,6 +1,6 @@
 [package]
 name = "game_features"
-version = "0.8.1"
+version = "0.8.2"
 authors = ["AnneKitsune <annekitsunefox@gmail.com>"]
 description = "Various helpful constructs for game development. See the github repository for detailed instructions."
 categories = ["game-engines"]
@@ -15,10 +15,8 @@ exclude = ["doc"]
 partial_function = "0.5.0"
 serde = { version = "1.0", features = ["serde_derive"] }
 rand = "0.9.0"
-#getrandom = { version = "0.3.1", features = ["js"] }
 derive-new = "0.7.0"
 derive_builder = "0.20.2"
-derivative = "2.2.0"
 
 [dev-dependencies]
 # WASM_BINDGEN_USE_BROWSER=1 cargo test --target wasm32-unknown-unknown
